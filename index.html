@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz · Bolsas de Valores del Mundo (ampliado)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,#eef2ff 0%,#f8fafc 45%,#ecfeff 100%);
+    min-height:100vh;color:#1e293b;padding:28px 16px 70px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto}
+  header{text-align:center;margin-bottom:26px}
+  header h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.5px;
+    background:linear-gradient(90deg,#4f46e5,#0891b2);-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  header p{margin-top:8px;color:#64748b;font-size:14.5px}
+  .tarjeta{background:#fff;border-radius:20px;padding:26px;
+    box-shadow:0 10px 30px -12px rgba(15,23,42,.18),0 2px 8px -3px rgba(15,23,42,.06);
+    border:1px solid #e8edf5}
+  .inicio h2{font-size:19px;font-weight:750;margin-bottom:6px}
+  .inicio .sub{color:#64748b;font-size:14px;margin-bottom:20px}
+  .gridPaises{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:10px}
+  .chip{display:flex;flex-direction:column;gap:4px;align-items:flex-start;
+    padding:13px 15px;border-radius:13px;border:2px solid #e2e8f0;background:#fff;
+    cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:650;color:#1e293b;
+    transition:.15s;text-align:left}
+  .chip:hover{border-color:#818cf8;background:#eef2ff;transform:translateY(-2px);
+    box-shadow:0 6px 16px -8px rgba(79,70,229,.5)}
+  .chipCount{font-size:11.5px;font-weight:600;color:#94a3b8}
+  .chipTodos{grid-column:1/-1;background:linear-gradient(90deg,#4f46e5,#0891b2);
+    color:#fff;border-color:transparent;flex-direction:row;justify-content:space-between;
+    align-items:center}
+  .chipTodos .chipCount{color:rgba(255,255,255,.85)}
+  .chipTodos:hover{background:linear-gradient(90deg,#4338ca,#0e7490);transform:translateY(-2px)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+  .btnSalir{background:none;border:none;color:#64748b;font-family:inherit;font-size:13.5px;
+    font-weight:600;cursor:pointer;padding:6px 10px;border-radius:9px}
+  .btnSalir:hover{background:#e2e8f0;color:#1e293b}
+  .marcador{font-size:13.5px;font-weight:700;color:#475569}
+  .progreso{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:20px}
+  .progreso > div{height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,#4f46e5,#06b6d4);transition:width .35s ease}
+  .paisTag{display:inline-block;font-size:12px;font-weight:750;letter-spacing:.4px;
+    text-transform:uppercase;color:#4f46e5;background:#eef2ff;padding:5px 11px;
+    border-radius:99px;margin-bottom:14px}
+  .pregunta{font-size:18.5px;font-weight:750;line-height:1.42;margin-bottom:20px;letter-spacing:-.2px}
+  .opciones{display:flex;flex-direction:column;gap:10px}
+  .opcion{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
+    padding:14px 16px;border-radius:13px;border:2px solid #e2e8f0;background:#fff;
+    cursor:pointer;font-family:inherit;font-size:15px;line-height:1.45;color:#1e293b;
+    transition:.15s ease}
+  .opcion:hover:not(:disabled){border-color:#818cf8;background:#eef2ff;transform:translateY(-1px)}
+  .opcion:disabled{cursor:default}
+  .letra{flex:0 0 26px;height:26px;border-radius:8px;background:#eef2ff;color:#4f46e5;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px}
+  .opcion.correcta{border-color:#16a34a;background:#dcfce7}
+  .opcion.correcta .letra{background:#16a34a;color:#fff}
+  .opcion.incorrecta{border-color:#dc2626;background:#fee2e2}
+  .opcion.incorrecta .letra{background:#dc2626;color:#fff}
+  .opcion.correcta .texto,.opcion.incorrecta .texto{font-weight:600}
+  .feedback{margin-top:18px;padding:15px 17px;border-radius:13px;font-size:14.5px;line-height:1.6;
+    animation:aparecer .25s ease}
+  @keyframes aparecer{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .feedback.ok{background:#f0fdf4;border-left:5px solid #16a34a}
+  .feedback.no{background:#fef2f2;border-left:5px solid #dc2626}
+  .feedback-titulo{font-weight:800;margin-bottom:7px;font-size:14.5px}
+  .feedback.ok .feedback-titulo{color:#15803d}
+  .feedback.no .feedback-titulo{color:#b91c1c}
+  .feedback p{color:#334155}
+  .btnSiguiente{margin-top:20px;width:100%;padding:15px;border:none;border-radius:13px;
+    background:linear-gradient(90deg,#4f46e5,#0891b2);color:#fff;font-family:inherit;
+    font-size:15.5px;font-weight:750;cursor:pointer;transition:.18s;
+    box-shadow:0 8px 20px -8px rgba(79,70,229,.7)}
+  .btnSiguiente:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .final{text-align:center;padding:38px 26px}
+  .emoji{font-size:52px;margin-bottom:12px}
+  .final h2{font-size:22px;font-weight:800;margin-bottom:16px}
+  .puntaje{font-size:52px;font-weight:850;letter-spacing:-2px;
+    background:linear-gradient(90deg,#4f46e5,#06b6d4);-webkit-background-clip:text;
+    background-clip:text;color:transparent;line-height:1}
+  .final .detalle{color:#475569;font-size:15px;margin-top:12px;line-height:1.6}
+  .acciones{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .btn{padding:13px 22px;border-radius:12px;border:2px solid #e2e8f0;background:#fff;
+    font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;color:#1e293b;transition:.15s}
+  .btn:hover{background:#f1f5f9}
+  .btn.primario{background:linear-gradient(90deg,#4f46e5,#0891b2);color:#fff;border-color:transparent;
+    box-shadow:0 8px 20px -8px rgba(79,70,229,.7)}
+  .btn.primario:hover{filter:brightness(1.08)}
+  @media(max-width:520px){
+    .tarjeta{padding:20px;border-radius:16px}
+    .pregunta{font-size:16.5px}
+    .opcion{font-size:14.3px;padding:12px 13px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Bolsas de Valores del Mundo</h1>
+    <p>Cuestionario ampliado: índices, mercados derivados y glosario de abreviaturas</p>
+  </header>
+
+  <main id="pantallaInicio" class="tarjeta inicio">
+    <h2>Elige un mercado para estudiar</h2>
+    <p class="sub">Cada respuesta se corrige al instante y te explica el porqué, con el significado de cada abreviatura.</p>
+    <div class="gridPaises" id="gridPaises"></div>
+  </main>
+
+  <main id="pantallaJuego" hidden>
+    <div class="topbar">
+      <button class="btnSalir" id="btnVolver">← Menú</button>
+      <div class="marcador" id="marcador">✅ 0 &nbsp; ❌ 0</div>
+    </div>
+    <div class="progreso"><div id="barraProgreso"></div></div>
+    <div class="tarjeta">
+      <div class="paisTag" id="paisTag"></div>
+      <div class="pregunta" id="textoPregunta"></div>
+      <div class="opciones" id="opciones"></div>
+      <div class="feedback" id="feedback" hidden>
+        <div class="feedback-titulo" id="feedbackTitulo"></div>
+        <p id="feedbackTexto"></p>
+      </div>
+      <button class="btnSiguiente" id="btnSiguiente" hidden>Siguiente →</button>
+      <div style="text-align:center;margin-top:14px;font-size:12.5px;color:#94a3b8" id="contador"></div>
+    </div>
+  </main>
+
+  <main id="pantallaFinal" class="tarjeta final" hidden>
+    <div class="emoji" id="emojiFinal">🎉</div>
+    <h2 id="tituloFinal">¡Terminaste!</h2>
+    <div class="puntaje" id="puntajeFinal">0%</div>
+    <p class="detalle" id="detalleFinal"></p>
+    <div class="acciones">
+      <button class="btn primario" id="btnRepetir">Volver a intentar</button>
+      <button class="btn" id="btnMenu">Elegir otro mercado</button>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   BANCO DE PREGUNTAS AMPLIADO
+   p = pregunta | o = opciones (con significado de abreviaturas)
+   c = índice correcto | e = explicación detallada
+   ========================================================= */
+const BANCO = [
+
+/* ================= COLOMBIA (BVC) ================= */
+{
+  pais:"Colombia (BVC)", bandera:"🇨🇴",
+  preguntas:[
+    {p:"¿A qué holding regional de bolsas pertenece la Bolsa de Valores de Colombia (BVC)?",
+     o:["Al MILA (Mercado Integrado Latinoamericano)","A nuam exchange (holding regional de Colombia, Chile y Perú)","A Euronext N.V. (bolsa paneuropea)","A LSEG (London Stock Exchange Group)"],c:1,
+     e:"La BVC forma parte de nuam exchange, el holding regional que integra las bolsas de Colombia, Chile y Perú, y le brinda infraestructura operativa, tecnológica y regulatoria para negociación, compensación y liquidación."},
+
+    {p:"¿Cuál es el principal índice de precios de la BVC mencionado en el análisis?",
+     o:["S&P/BMV IPC (Índice de Precios y Cotizaciones de México)","Ibovespa (IBOV - índice de referencia de Brasil)","MSCI COLCAP (índice de referencia de la BVC)","S&P Merval (índice de referencia de Argentina)"],c:2,
+     e:"En Colombia los índices de precios destacados son el MSCI COLCAP (índice insignia de la BVC), el COLIR y el COLTES. Los otros nombres corresponden a México, Brasil y Argentina."},
+
+    {p:"¿Qué sistema transaccional administra la BVC para la negociación y registro de operaciones de renta fija?",
+     o:["SEN (Sistema Electrónico de Negociación del Banco de la República)","MEC (Mercado Electrónico Colombiano)","SIBE (Sistema de Interconexión Bursátil Español)","Telepregón (motor de la Bolsa de Santiago)"],c:1,
+     e:"La BVC administra el MEC, sistema transaccional centralizado para la negociación y registro de operaciones de renta fija en el mercado colombiano."},
+
+    {p:"El Sistema Electrónico de Negociación (SEN), usado para deuda pública y operaciones interbancarias, es administrado por:",
+     o:["La Superintendencia Financiera de Colombia (SFC)","El AMV (Autorregulador del Mercado de Valores)","El Banco de la República","Deceval (Depósito Central de Valores)"],c:2,
+     e:"El Banco de la República administra el SEN, plataforma para la negociación y registro de operaciones sobre deuda pública y del mercado interbancario (reportos, simultáneas, TTV)."},
+
+    {p:"¿Qué sistema administra la Superintendencia Financiera e incluye el Registro Nacional de Valores y Emisores (RNVE)?",
+     o:["SIAMV (Sistema de Información del Autorregulador del Mercado de Valores)","SIMEV (Sistema Integral de Información del Mercado de Valores)","MEC (Mercado Electrónico Colombiano)","CRCC (Cámara de Riesgo Central de Contraparte)"],c:1,
+     e:"El SIMEV lo administra la SFC e incluye el RNVE, donde se inscribe y consulta la información de emisores, valores y emisiones del mercado."},
+
+    {p:"¿Qué sistema es administrado por el Autorregulador del Mercado de Valores (AMV) para registrar información de los profesionales del mercado?",
+     o:["SIMEV (Sistema Integral de Información del Mercado de Valores)","SIAMV (Sistema de Información del Autorregulador del Mercado de Valores)","SEN (Sistema Electrónico de Negociación)","MEC (Mercado Electrónico Colombiano)"],c:1,
+     e:"El SIAMV es el Sistema de Información del Autorregulador del Mercado de Valores, administrado por el AMV, usado para registro y consulta de información de los profesionales del mercado."},
+
+    {p:"¿Qué entidad colombiana interviene tras la ejecución de una operación para compensar y garantizar el cumplimiento, actuando como contraparte central?",
+     o:["Deceval (Depósito Central de Valores)","La CRCC (Cámara de Riesgo Central de Contraparte)","El AMV (Autorregulador del Mercado de Valores)","La BVC (Bolsa de Valores de Colombia)"],c:1,
+     e:"La CRCC y los depósitos de valores (Deceval y DCV) compensan, liquidan fondos y anotan en cuenta el cambio de propiedad de los títulos, garantizando el cumplimiento."},
+
+    {p:"¿Cuáles son las firmas calificadoras de riesgo autorizadas por la Superintendencia Financiera en Colombia?",
+     o:["HR Ratings, Verum y PCR Verum (calificadoras mexicanas)","Fitch Ratings Colombia, BRC Ratings – S&P Global y Value and Risk Rating","CRISIL, ICRA y CARE (calificadoras indias)","RAM y MARC (calificadoras malasias)"],c:1,
+     e:"En Colombia están autorizadas Fitch Ratings Colombia, BRC Ratings – S&P Global y Value and Risk Rating."},
+
+    {p:"En la escala de corto plazo colombiana, ¿cuál es la categoría que representa la más alta certeza de pago oportuno?",
+     o:["BRC1+ / F1+","A-1+ (escala global de S&P)","Nivel 1 (escala chilena)","BRC3 / F3"],c:0,
+     e:"La escala de corto plazo colombiana usa BRC1+ / F1+ como la más alta certeza de pago oportuno, seguida de BRC1 / F1, BRC2 / F2 y BRC3 / F3."},
+
+    {p:"¿Cuál es el forward más común usado en Colombia para cubrirse del riesgo cambiario?",
+     o:["Futuro de TRM negociado en bolsa","NDF (Non-Delivery Forward - forward sin entrega física) sobre la TRM","Cross Currency Swap (swap de divisas)","TRS (Total Return Swap - swap de retorno total)"],c:1,
+     e:"El más común es el NDF sobre la TRM, usado por empresas para cubrirse del riesgo cambiario. También existen forwards sobre TES, que permiten a extranjeros apostar por la deuda colombiana sin comprar el título físicamente."},
+
+    {p:"¿Cuál de estos productos NO tiene un mercado local líquido en Colombia?",
+     o:["Repos (reportos)","Futuros sobre TES e IBR","Warrants, CDS (Credit Default Swap) y TRS (Total Return Swap)","Opciones sobre USD"],c:2,
+     e:"Warrants, CDS y TRS no tienen un mercado local líquido; los inversionistas institucionales colombianos suelen acceder a ellos en mercados internacionales (offshore)."},
+
+    {p:"¿Qué representa exactamente el índice MSCI COLCAP de la BVC?",
+     o:["El índice de renta fija de la BVC (COLIR)","El índice de precios que mide el comportamiento de las acciones más líquidas y representativas de la BVC","El índice de títulos de deuda pública TES (COLTES)","El índice de volatilidad del mercado colombiano"],c:1,
+     e:"El MSCI COLCAP es el índice de precios insignia de la BVC: mide el comportamiento de las acciones más líquidas y representativas del mercado accionario colombiano, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué mide el índice COLIR de la BVC?",
+     o:["El comportamiento de las acciones (renta variable)","El comportamiento de los títulos de renta fija","El comportamiento de los TES (deuda pública)","La volatilidad del mercado"],c:1,
+     e:"El COLIR es el índice de renta fija de la BVC: mide el comportamiento de los títulos de renta fija del mercado colombiano. No debe confundirse con el COLTES, que se enfoca en títulos de deuda pública TES."},
+
+    {p:"¿Qué mide el índice COLTES de la BVC?",
+     o:["El comportamiento de los títulos de deuda pública TES","El comportamiento de las acciones preferenciales","El comportamiento de los CDT bancarios","La volatilidad del MSCI COLCAP"],c:0,
+     e:"El COLTES es el índice que mide el comportamiento de los Títulos de Deuda Pública TES (Títulos de Tesorería) emitidos por el Gobierno colombiano."},
+
+    {p:"¿Qué es el PER (Price-to-Earnings Ratio) y qué mide?",
+     o:["Es el Precio/Valor en Libros (P/BV) y mide el valor contable","Es el múltiplo Precio/Utilidad y mide cuántos años de ganancias paga el mercado por una acción","Es el Dividend Yield y mide la rentabilidad por dividendos","Es el ADTV y mide el volumen diario transado"],c:1,
+     e:"El PER (Price-to-Earnings Ratio, o P/U en español) es el múltiplo Precio/Utilidad: indica cuántas veces las ganancias anuales está pagando el mercado por una acción. Es un indicador clave de valoración agregada del índice."},
+
+    {p:"¿Qué mide el Dividend Yield de un mercado?",
+     o:["La rentabilidad por dividendos (dividendos pagados / precio de la acción)","El volumen diario transado (ADTV)","La volatilidad histórica del índice","El número de emisores listados"],c:0,
+     e:"El Dividend Yield mide la rentabilidad por dividendos: es la relación entre los dividendos pagados por una empresa (o índice) y el precio de la acción. Es un indicador de valoración agregada muy seguido por los inversores de renta variable."},
+
+    {p:"¿Cuáles son los futuros estandarizados que se negocian en la BVC colombiana?",
+     o:["Solo sobre el índice COLCAP","Sobre TRM, TES e IBR, además de acciones individuales y el índice COLCAP","Solo sobre acciones de Éxito y Davivienda","Solo sobre commodities agrícolas"],c:1,
+     e:"En la BVC existen futuros estandarizados sobre: Tasa de Cambio (TRM), Tasas de Interés (TES e IBR), acciones individuales (como Éxito o Davivienda) y sobre el índice COLCAP."},
+
+    {p:"¿Qué es un repo (reporto) en el mercado colombiano?",
+     o:["Un contrato de futuros sobre el índice COLCAP","Una venta de un título con el pacto de recomprarlo a un plazo y precio fijados (financiamiento de corto plazo)","Un swap de tasas de interés","Una opción de compra sobre acciones"],c:1,
+     e:"Un repo (reporto) es la venta de un título con el pacto de recomprarlo a un plazo y precio fijados. Sirve para obtener financiamiento de corto plazo y es una de las operaciones de liquidez más usadas del mercado monetario."},
+
+    {p:"¿Qué es una TTV (Transferencia Temporal de Valores) en Colombia?",
+     o:["Un futuro sobre la TRM","Un préstamo de valores, usado principalmente para ventas en corto","Un bono pensional","Un ETF de renta fija"],c:1,
+     e:"La TTV (Transferencia Temporal de Valores) es una operación de préstamo de valores, usada principalmente para ventas en corto (short selling) y para la gestión de liquidez en el mercado colombiano."},
+
+    {p:"¿Qué es un Cross Currency Swap en el mercado de derivados?",
+     o:["Un swap de tasas de interés en la misma moneda","Un swap que intercambia flujos de pago en distintas monedas","Un forward sobre acciones","Un futuro sobre el índice COLCAP"],c:1,
+     e:"Un Cross Currency Swap es un swap que intercambia flujos de pago en distintas monedas (por ejemplo, USD vs COP). Se usa para cubrir riesgo cambiario y de tasas de interés de forma conjunta."},
+
+    {p:"¿Qué son los ETFs (Exchange Traded Funds) mencionados en el mercado colombiano?",
+     o:["Fondos cotizados que replican un índice y permiten acceder a portafolios diversificados","Fondos de pensiones públicos","Certificados de depósito a término","Bonos pensionales"],c:0,
+     e:"Los ETFs (Exchange Traded Funds) son fondos cotizados que replican un índice o canasta de activos y permiten a los inversionistas acceder a portafolios diversificados de renta fija y/o variable gestionados por profesionales, con la ventaja de cotizar como una acción."},
+
+    {p:"¿Qué son las FICs (Fondos de Inversión Colectiva) en Colombia?",
+     o:["Fondos que agrupan el dinero de varios inversionistas para invertir en portafolios diversificados","Futuros sobre índices bursátiles","Certificados de deuda pública","Calificadoras de riesgo"],c:0,
+     e:"Las FICs (Fondos de Inversión Colectiva) agrupan el dinero de múltiples inversionistas para invertir en portafolios diversificados de renta fija y/o variable, gestionados por profesionales. Son uno de los vehículos agrupados más usados en Colombia."},
+
+    {p:"¿Qué son los CDT (Certificados de Depósito a Término) en Colombia?",
+     o:["Títulos de deuda pública emitidos por el Gobierno","Títulos de renta fija emitidos por bancos, con plazo y tasa definidos","Acciones preferenciales sin voto","Futuros sobre la TRM"],c:1,
+     e:"Los CDT (Certificados de Depósito a Término) son títulos de renta fija emitidos por bancos, con plazo y tasa definidos. Forman parte de los instrumentos de renta fija que se negocian en el mercado colombiano."}
+  ]
+},
+
+/* ================= BRASIL (B3) ================= */
+{
+  pais:"Brasil (B3)", bandera:"🇧🇷",
+  preguntas:[
+    {p:"¿De la fusión de qué entidades surge B3 (Brasil Bolsa Balcão)?",
+     o:["BM&FBOVESPA y Cetip","Bovespa y el Banco Central do Brasil (BCB)","Cetip y la CVM (Comissão de Valores Mobiliários)","BM&F y BNDES"],c:0,
+     e:"B3 surgió de la fusión entre BM&FBOVESPA y Cetip, convirtiéndose en una de las bolsas más grandes del mundo por capitalización y volumen de derivados."},
+
+    {p:"¿Cuál es la plataforma transaccional que utiliza B3 para acciones y derivados?",
+     o:["arrowhead (motor de la Bolsa de Tokio)","PUMA Trading System (basado en tecnología de CME Group)","Optiq (motor de Euronext)","SETS (motor de la Bolsa de Londres)"],c:1,
+     e:"B3 usa el PUMA Trading System, basado en tecnología desarrollada por CME Group, que procesa acciones y derivados."},
+
+    {p:"¿Cuál es el índice de referencia de B3 que mide el retorno total de las acciones más representativas y líquidas?",
+     o:["IBrX-100 (índice amplio de 100 acciones)","IFIX (índice de fondos inmobiliarios)","Ibovespa (IBOV - índice de referencia de B3)","ISE (Índice de Sostenibilidad Empresarial)"],c:2,
+     e:"El Ibovespa (IBOV) es el índice de referencia. El IBrX-100 es un índice amplio, el IFIX mide fondos inmobiliarios y el ISE es el índice de sostenibilidad empresarial."},
+
+    {p:"¿Qué índice brasileño agrupa a los fondos de inversión inmobiliaria (FIIs)?",
+     o:["ISE (Índice de Sostenibilidad Empresarial)","IFIX (Índice de Fondos Inmobiliarios)","IBrX-100 (índice amplio de 100 acciones)","Ibovespa (IBOV)"],c:1,
+     e:"El IFIX es el índice de fondos inmobiliarios (FIIs), un vehículo inmensamente popular en Brasil que transa como acciones y paga rentas mensuales."},
+
+    {p:"¿Cuál es el derivado más líquido de Brasil, usado para cubrirse o especular con la tasa interbancaria?",
+     o:["Futuro de Dólar (DOL)","Futuro de Ibovespa (IND)","Futuro de Tasa DI (DI1 - futuro sobre la tasa interbancaria)","Futuro de soya"],c:2,
+     e:"El Futuro de Tasa DI (DI1) es el derivado más líquido de Brasil para cobertura y especulación sobre tasas interbancarias. Los futuros de dólar son DOL y los mini contratos WDO."},
+
+    {p:"¿Cómo se distingue la Escala Nacional Brasileña de calificación crediticia?",
+     o:["Con el prefijo .mx (México)","Con el sufijo \"br\" (ej. brAAA)","Con el sufijo .ar (Argentina)","Con el prefijo AAA.cl (Chile)"],c:1,
+     e:"La Escala Nacional Brasileña añade el sufijo \"br\" (brAAA, brAA, brBBB...). Esto permite distinguir el riesgo relativo entre emisores domésticos sin el techo que impondría la calificación soberana global."},
+
+    {p:"¿Qué sistema utilizan los emisores brasileños para enviar estados financieros y hechos relevantes a la CVM y a B3?",
+     o:["EMISNET (sistema mexicano)","Empresas.NET","SGXNet (sistema de Singapur)","TDnet (sistema de Japón)"],c:1,
+     e:"Empresas.NET es el sistema por el cual los emisores envían estados financieros y hechos relevantes a la CVM (Comissão de Valores Mobiliários) y a B3."},
+
+    {p:"Las \"Operações Compromissadas\" del mercado brasileño equivalen a:",
+     o:["Warrants estructurados","Repos (venta con pacto de recompra)","Swaps cambiarios","NDFs (Non-Delivery Forwards) sobre el real"],c:1,
+     e:"Son operaciones de venta con pacto de recompra de títulos públicos para liquidez bancaria, equivalentes a los repos o al \"carrusel\" de otros países."},
+
+    {p:"¿Qué plataforma utiliza B3 para la distribución de datos de mercado (Market Data) en tiempo real?",
+     o:["UP2DATA y B3 Market Data feeds","RNS (Regulatory News Service de Londres)","Datatec (sistema chileno)","InfoSEL (sistema mexicano)"],c:0,
+     e:"Para distribuir datos de mercado en tiempo real, B3 utiliza la plataforma UP2DATA y los B3 Market Data feeds, además de integrarse con Bloomberg, Refinitiv y FactSet."},
+
+    {p:"Los FIIs brasileños son:",
+     o:["Fondos de inversión inmobiliaria que transan como acciones y pagan rentas mensuales","Fondos indexados al Ibovespa","Fondos de pensión estatales","Certificados de depósito bancario"],c:0,
+     e:"Los FIIs (Fundos de Investimento Imobiliário) son inmensamente populares en Brasil: transan como acciones y pagan rentas mensuales, siendo una de las grandes particularidades del mercado brasileño."},
+
+    {p:"¿Qué representa exactamente el Ibovespa (IBOV)?",
+     o:["El índice de fondos inmobiliarios","El índice de referencia de B3 que mide el retorno total de las acciones más representativas y líquidas","El índice de sostenibilidad empresarial","El índice de deuda pública brasileña"],c:1,
+     e:"El Ibovespa (IBOV) es el índice de referencia de B3: mide el retorno total de una cartera teórica compuesta por las acciones más representativas y líquidas del mercado brasileño, ponderada por cantidad de negocios y volumen financiero."},
+
+    {p:"¿Qué es el IBrX-100 de B3?",
+     o:["Un índice amplio que agrupa las 100 acciones más negociadas de B3","Un índice de fondos inmobiliarios","Un índice de sostenibilidad","Un índice de deuda pública"],c:0,
+     e:"El IBrX-100 es un índice amplio que agrupa las 100 acciones más negociadas de B3, ponderado por capitalización. Es distinto del Ibovespa, que se enfoca en las más representativas y líquidas."},
+
+    {p:"¿Qué es el ISE de B3?",
+     o:["El Índice de Sostenibilidad Empresarial","El índice de fondos inmobiliarios","El índice de referencia del mercado","El índice de deuda pública"],c:0,
+     e:"El ISE (Índice de Sostenibilidad Empresarial) es el índice que agrupa a las empresas con mejores prácticas de sostenibilidad y responsabilidad social corporativa de B3."},
+
+    {p:"¿Qué es el ADTV mencionado en los indicadores de liquidez de B3?",
+     o:["El Average Daily Trading Volume (volumen diario promedio de negociación)","El Annual Dividend Total Value (valor total de dividendos anuales)","El Adjusted Daily Trading Variance (varianza diaria ajustada)","El Average Derivative Trading Volume (volumen de derivados)"],c:0,
+     e:"El ADTV (Average Daily Trading Volume) es el volumen diario promedio de negociación, un indicador clave de liquidez de un mercado. En Brasil es altísimo, reflejando el tamaño del mercado."},
+
+    {p:"¿Qué es el PER (P/L en Brasil) aplicado al Ibovespa?",
+     o:["El Precio/Valor en Libros del índice","El múltiplo Precio/Utilidad agregado del índice, que indica cuántos años de ganancias paga el mercado","El Dividend Yield del índice","El volumen diario transado"],c:1,
+     e:"El PER (Price-to-Earnings Ratio, localmente P/L) del Ibovespa es el múltiplo Precio/Utilidad agregado: indica cuántos años de ganancias está pagando el mercado por las acciones del índice. Es un indicador de valoración agregada."},
+
+    {p:"¿Cuáles son los futuros de commodities más relevantes en B3?",
+     o:["Soya, maíz y ganado","Petróleo Brent y cobre","Oro y plata","Trigo y aceite de palma"],c:0,
+     e:"En B3 se negocian futuros de commodities como soya, maíz y ganado, además de los futuros financieros de tasa DI, dólar e Ibovespa."},
+
+    {p:"¿Qué es un \"Termo\" (forward) en el mercado brasileño?",
+     o:["Un contrato a plazo bilateral para liquidar acciones o divisas a futuro (ej. Termo de acciones en B3 y NDFs OTC)","Un futuro estandarizado sobre el Ibovespa","Un swap de tasas","Una opción de compra"],c:0,
+     e:"El Termo es un contrato a plazo (forward) bilateral para liquidar acciones o divisas a futuro. En Brasil destacan el Termo de acciones negociado en B3 y los NDFs (Non-Delivery Forwards) de divisas en el mercado OTC."},
+
+    {p:"¿Qué es un Swap DI/Pre en Brasil?",
+     o:["Un swap que intercambia tasa flotante (DI) por tasa fija (Pre)","Un swap de divisas","Un futuro sobre el dólar","Una opción sobre acciones de Petrobras"],c:0,
+     e:"Los Swaps DI/Pre son swaps registrados en B3 que intercambian tasa flotante (DI, la tasa interbancaria) por tasa fija (Pre). Son uno de los derivados OTC más usados por los bancos brasileños."},
+
+    {p:"¿Qué son los COE (Certificados de Operações Estruturadas) en Brasil?",
+     o:["Notas estructuradas similares a productos de inversión con retorno ligado a un activo subyacente","Fondos de inversión inmobiliaria","Futuros sobre commodities","Bonos de deuda pública"],c:0,
+     e:"Los COE (Certificados de Operações Estruturadas) son notas estructuradas similares a las notas estructuradas internacionales, con retorno ligado a un activo subyacente (índices, acciones, divisas, etc.)."},
+
+    {p:"¿Qué son los CRI y CRA en el mercado brasileño de renta fija?",
+     o:["Títulos del sector inmobiliario (CRI) y del sector agrícola (CRA)","Fondos de inversión colectiva","Futuros sobre el Ibovespa","Warrants estructurados"],c:0,
+     e:"Los CRI (Certificados de Recebíveis Imobiliários) y CRA (Certificados de Recebíveis do Agronegócio) son títulos de renta fija ligados a los sectores inmobiliario y agrícola respectivamente, muy populares en Brasil por su tratamiento fiscal."},
+
+    {p:"¿Qué son las Debêntures incentivadas en Brasil?",
+     o:["Bonos corporativos con exención de impuestos para personas físicas, destinados a financiar proyectos de infraestructura","Futuros sobre tasas de interés","Opciones sobre acciones","Fondos de pensión"],c:0,
+     e:"Las Debêntures incentivadas son bonos corporativos con exención de impuestos para personas físicas, destinados a financiar proyectos de infraestructura. Son una de las grandes particularidades del mercado de renta fija brasileño."}
+  ]
+},
+
+/* ================= MÉXICO (BMV) ================= */
+{
+  pais:"México (BMV)", bandera:"🇲🇽",
+  preguntas:[
+    {p:"¿Cuál es el motor de negociación electrónica de alta velocidad de la BMV?",
+     o:["MoNET / MoNTS (motor de la BMV)","BIVA Match (motor de la Bolsa Institucional de Valores)","Xetra (motor de Deutsche Börse)","SETS (motor de la Bolsa de Londres)"],c:0,
+     e:"MoNET / MoNTS es el motor de negociación de la BMV, mientras que BIVA Match es el motor de la Bolsa Institucional de Valores (BIVA)."},
+
+    {p:"¿Cuál es el principal índice del mercado accionario de la BMV?",
+     o:["FTSE BIVA (índice de la Bolsa Institucional de Valores)","S&P/BMV IPC (Índice de Precios y Cotizaciones)","S&P/BMV INMEX (índice amplio de la BMV)","VIMEX (índice de volatilidad implícita)"],c:1,
+     e:"El S&P/BMV IPC es el principal indicador del mercado accionario de la BMV. El FTSE BIVA pertenece a BIVA, el INMEX es otro índice y el VIMEX mide volatilidad."},
+
+    {p:"¿Qué índice mide la volatilidad implícita del mercado mexicano?",
+     o:["INMEX (índice amplio de la BMV)","IPC (Índice de Precios y Cotizaciones)","VIMEX (índice de volatilidad implícita)","FIBRAs (índice de fideicomisos inmobiliarios)"],c:2,
+     e:"El VIMEX es el índice de volatilidad implícita del mercado mexicano, análogo al VIX estadounidense."},
+
+    {p:"¿Qué institución realiza el depósito, custodia y liquidación de valores en México?",
+     o:["Asigna (cámara de compensación de derivados)","Indeval (S.D. Indeval, depósito central de valores)","ChinaClear (depósito central de China)","Iberclear (depósito central de España)"],c:1,
+     e:"S.D. Indeval es el depósito central de valores; Asigna es la cámara de compensación de derivados (junto con la CCV)."},
+
+    {p:"¿Dónde se negocian los derivados estandarizados en México?",
+     o:["MexDer (Mercado Mexicano de Derivados)","MoNET (motor de la BMV)","EMISNET (sistema de reporte de emisoras)","BIVA Match (motor de BIVA)"],c:0,
+     e:"MexDer (Mercado Mexicano de Derivados) negocia los contratos estandarizados con liquidación en Asigna, la cámara de compensación."},
+
+    {p:"¿Qué sistema permite a las emisoras mexicanas reportar estados financieros e información relevante a la BMV y a la CNBV?",
+     o:["STAV-2 (Sistema de Transferencia y Administración de Valores)","EMISNET","BURSATEC (brazo tecnológico de Grupo BMV)","SIMEV (sistema colombiano)"],c:1,
+     e:"EMISNET es la plataforma electrónica mediante la cual las emisoras reportan estados financieros e información relevante a la BMV y a la CNBV."},
+
+    {p:"¿Qué sufijo identifica la Escala Nacional de calificación mexicana?",
+     o:[".ar (Argentina)",".mx (México)","br (Brasil)",".cl (Chile)"],c:1,
+     e:"Las calificaciones mexicanas se expresan en Escala Nacional con el sufijo .mx (AAA.mx, AA.mx, BBB.mx...), ajustada para evaluar el riesgo relativo dentro del mercado doméstico."},
+
+    {p:"¿Qué vehículo permite en México transar acciones y ETFs extranjeros en pesos mexicanos?",
+     o:["FIBRAs (fideicomisos de infraestructura inmobiliaria)","CKDs (Certificados de Capital de Desarrollo)","Sistema Internacional de Cotizaciones (SIC)","CERPIs (Certificados de Proyectos de Inversión)"],c:2,
+     e:"El Sistema Internacional de Cotizaciones (SIC) permite transar acciones y ETFs extranjeros en pesos mexicanos dentro del mercado local."},
+
+    {p:"¿Cuáles de estas calificadoras están autorizadas y reguladas por la CNBV en México?",
+     o:["Feller Rate e ICR Chile (calificadoras chilenas)","HR Ratings, Verum y PCR Verum","CRISIL e ICRA (calificadoras indias)","JCR y R&I (calificadoras japonesas)"],c:1,
+     e:"En México operan Fitch Ratings México, S&P Global Ratings, Moody's Local México, HR Ratings, Verum y PCR Verum, todas reguladas por la CNBV (Comisión Nacional Bancaria y de Valores)."},
+
+    {p:"¿Qué escala se usa para el corto plazo en México?",
+     o:["Niveles 1 a 5 (escala chilena)","F1+.mx, HR1 o MX1 hasta F3.mx o MX4","BRC1+ / F1+ (escala colombiana)","P1 a P3 (escala malasia)"],c:1,
+     e:"En el corto plazo mexicano se usan niveles como F1+.mx, HR1 o MX1 (máxima capacidad de pago oportuno), bajando progresivamente hasta F3.mx o MX4."},
+
+    {p:"¿Qué representa exactamente el S&P/BMV IPC?",
+     o:["El índice de volatilidad implícita de México","El índice de precios y cotizaciones que mide el comportamiento de las principales acciones cotizadas en la BMV","El índice de fideicomisos inmobiliarios (FIBRAs)","El índice de la Bolsa Institucional de Valores (BIVA)"],c:1,
+     e:"El S&P/BMV IPC (Índice de Precios y Cotizaciones) es el principal índice del mercado accionario mexicano: mide el comportamiento de las acciones más representativas y líquidas cotizadas en la BMV, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el FTSE BIVA?",
+     o:["El índice de la Bolsa Institucional de Valores (BIVA)","El índice de la BMV","El índice de volatilidad mexicano","El índice de FIBRAs"],c:0,
+     e:"El FTSE BIVA es el índice de la Bolsa Institucional de Valores (BIVA), la segunda bolsa de valores de México, creada para competir con la BMV."},
+
+    {p:"¿Qué es el S&P/BMV INMEX?",
+     o:["Un índice amplio del mercado accionario mexicano","El índice de volatilidad implícita","El índice de FIBRAs","El índice de la bolsa BIVA"],c:0,
+     e:"El S&P/BMV INMEX es un índice amplio del mercado accionario mexicano que busca representar al mercado en su conjunto, más allá del IPC."},
+
+    {p:"¿Qué es el S&P/BMV FIBRAs?",
+     o:["El índice que agrupa a los Fideicomisos de Infraestructura y Bienes Raíces (FIBRAs)","El índice de la BMV","El índice de volatilidad","El índice de la bolsa BIVA"],c:0,
+     e:"El S&P/BMV FIBRAs es el índice que agrupa a los FIBRAs (Fideicomisos de Infraestructura y Bienes Raíces), el vehículo inmobiliario cotizado mexicano equivalente a los REITs."},
+
+    {p:"¿Qué son los Cetes en México?",
+     o:["Certificados de la Tesorería de la Federación, títulos de deuda pública de corto plazo","Bonos de largo plazo indexados a inflación","Certificados bursátiles corporativos","Fideicomisos inmobiliarios"],c:0,
+     e:"Los Cetes (Certificados de la Tesorería de la Federación) son títulos de deuda pública de corto plazo emitidos por el Gobierno mexicano, parte fundamental de la renta fija."},
+
+    {p:"¿Qué son los Bonos M en México?",
+     o:["Bonos de Desarrollo del Gobierno Federal de largo plazo, a tasa fija","Certificados de la Tesorería de corto plazo","Bonos indexados a inflación (Udibonos)","Certificados bursátiles corporativos"],c:0,
+     e:"Los Bonos M (Bonos de Desarrollo del Gobierno Federal) son títulos de deuda pública de largo plazo a tasa fija, parte central de la curva de rendimientos mexicana."},
+
+    {p:"¿Qué son los Udibonos en México?",
+     o:["Bonos de deuda pública indexados a la inflación (UDIS)","Bonos de largo plazo a tasa fija","Certificados de la Tesorería","Fideicomisos inmobiliarios"],c:0,
+     e:"Los Udibonos son bonos de deuda pública indexados a la inflación, referenciados a las UDIS (Unidades de Inversión). Protegen al inversionista de la pérdida de poder adquisitivo."},
+
+    {p:"¿Qué son los FIBRAs en México?",
+     o:["Fideicomisos de Infraestructura y Bienes Raíces, el equivalente mexicano a los REITs","Fondos de inversión de renta fija","Futuros sobre el IPC","Certificados bursátiles corporativos"],c:0,
+     e:"Los FIBRAs (Fideicomisos de Infraestructura y Bienes Raíces) son el vehículo inmobiliario cotizado mexicano, equivalente a los REITs. Cotizan en la BMV y reparten rendimientos periódicos a los inversionistas."},
+
+    {p:"¿Qué son los CKDs (Certificados de Capital de Desarrollo) en México?",
+     o:["Vehículos alternativos de inversión en proyectos de infraestructura y desarrollo","Futuros sobre tasas de interés","Bonos de deuda pública","Fondos de pensiones (AFOREs)"],c:0,
+     e:"Los CKDs (Certificados de Capital de Desarrollo) son vehículos alternativos de inversión en proyectos de infraestructura y desarrollo, dirigidos a inversionistas institucionales."},
+
+    {p:"¿Qué son los CERPIs (Certificados de Proyectos de Inversión) en México?",
+     o:["Vehículos alternativos de inversión en proyectos, similares a los CKDs","Futuros sobre el IPC","Opciones sobre acciones","Bonos de deuda pública"],c:0,
+     e:"Los CERPIs (Certificados de Proyectos de Inversión) son vehículos alternativos de inversión en proyectos, similares a los CKDs, dirigidos a inversionistas institucionales."},
+
+    {p:"¿Qué es un reporto en el mercado mexicano?",
+     o:["Una operación de venta con pacto de recompra sobre deuda gubernamental para fondeo de liquidez de corto plazo","Un futuro sobre el IPC","Una opción de compra sobre acciones","Un swap de tasas de interés"],c:0,
+     e:"El reporto es una operación monetaria de venta con pacto de recompra sobre deuda gubernamental, usada para el fondeo de liquidez de corto plazo. Es equivalente al repo de otros mercados."},
+
+    {p:"¿Qué es el \"carrusel\" en el mercado mexicano de derivados?",
+     o:["Cadenas continuas de reportos o simultáneas","Un futuro sobre el IPC","Una opción sobre el dólar","Un swap de tasas"],c:0,
+     e:"El carrusel se refiere a cadenas continuas de reportos o simultáneas, usadas para extender el financiamiento de corto plazo de forma sucesiva."}
+  ]
+},
+
+/* ================= ARGENTINA (BYMA) ================= */
+{
+  pais:"Argentina (BYMA)", bandera:"🇦🇷",
+  preguntas:[
+    {p:"¿De qué proceso surge BYMA (Bolsa y Mercados Argentinos)?",
+     o:["De la fusión con B3 (Brasil)","De la reestructuración del Mercado de Valores de Buenos Aires, integrada con la Bolsa de Comercio de Buenos Aires","De la privatización del Banco Central (BCRA)","De la integración al MILA (Mercado Integrado Latinoamericano)"],c:1,
+     e:"BYMA surgió de la reestructuración del Mercado de Valores de Buenos Aires e integrada con la histórica Bolsa de Comercio de Buenos Aires."},
+
+    {p:"¿Cuál es el índice insignia del mercado accionario argentino?",
+     o:["S&P/BYMA Argentina General (índice amplio)","S&P Merval (índice insignia)","S&P/CLX IPSA (índice chileno)","MSCI COLCAP (índice colombiano)"],c:1,
+     e:"El S&P Merval es el índice insignia; el S&P/BYMA Argentina General es el índice amplio del mercado."},
+
+    {p:"¿Qué son los CEDEARs?",
+     o:["Bonos soberanos emitidos en pesos","Certificados que representan acciones y ETFs globales y cotizan localmente en pesos y dólares","Cheques de pago diferido para Pymes","Obligaciones negociables de empresas argentinas"],c:1,
+     e:"Los CEDEARs (Certificados de Depósito Argentinos) representan acciones y ETFs globales cotizando localmente en pesos y dólares, con altísima liquidez, y son una pieza central del mercado argentino."},
+
+    {p:"¿Qué entidad realiza la custodia y la transferencia de propiedad de los activos en Argentina?",
+     o:["Indeval (depósito central mexicano)","Caja de Valores S.A. (filial de BYMA)","Deceval (depósito central colombiano)","Euroclear France (depósito central francés)"],c:1,
+     e:"Caja de Valores S.A., filial de BYMA, realiza la custodia y la transferencia de propiedad de los activos mediante anotaciones en cuenta."},
+
+    {p:"¿Cómo se denomina a los intermediarios autorizados que operan en BYMA?",
+     o:["Casas de Bolsa (México)","ALYCs (Agentes de Liquidación y Compensación)","Sociedades Comisionistas de Bolsa (Colombia)","Corredores de Bolsa (Chile)"],c:1,
+     e:"En Argentina los intermediarios autorizados se denominan ALYCs (Agentes de Liquidación y Compensación)."},
+
+    {p:"¿Qué plataforma transaccional se utiliza en BYMA?",
+     o:["Millennium (con ruteo Matrix/ROFX)","Optiq (motor de Euronext)","PUMA Trading System (motor de B3)","NEAT (motor de la NSE india)"],c:0,
+     e:"Los sistemas transaccionales de BYMA son Millennium y las plataformas de ruteo de órdenes Matrix/ROFX."},
+
+    {p:"¿Qué sufijo identifica la Escala Nacional de calificación argentina?",
+     o:[".mx (México)",".ar (Argentina)",".cl (Chile)","br (Brasil)"],c:1,
+     e:"La Escala Nacional de Argentina usa el sufijo .ar (AAA.ar, AA.ar, BBB.ar...), ajustada para evaluar el riesgo relativo dentro del mercado doméstico."},
+
+    {p:"¿Cuál es el instrumento de liquidez dominante en Argentina, donde un inversor presta fondos a corto plazo garantizado por títulos depositados en Caja de Valores?",
+     o:["Repo (reporto)","Caución Bursátil","NDF (Non-Delivery Forward)","Swap de tasas"],c:1,
+     e:"La Caución Bursátil es el instrumento de liquidez dominante del mercado argentino: un inversor presta fondos a corto plazo garantizado por títulos depositados en Caja de Valores."},
+
+    {p:"¿Dónde se negocian principalmente los futuros agrícolas y de dólar en Argentina?",
+     o:["Matba Rofex","Eurex (mercado alemán de derivados)","MexDer (mercado mexicano de derivados)","CFFEX (mercado chino de futuros financieros)"],c:0,
+     e:"Los derivados operan fuertemente en Matba Rofex y BYMA; los futuros agrícolas con entrega física y los futuros de dólar se negocian en Matba Rofex."},
+
+    {p:"¿Qué son los Bopreal mencionados en el mercado argentino?",
+     o:["Un tipo de CEDEAR (certificado de depósito argentino)","Títulos públicos en pesos/dólares dentro de la renta fija","Un futuro sobre el Merval","Un ETF de acciones argentinas"],c:1,
+     e:"Los Bopreal forman parte de la renta fija argentina, junto con los títulos públicos soberanos en dólares, los títulos en pesos, la deuda subsoberana, las obligaciones negociables y los pagarés bursátiles Pyme."},
+
+    {p:"¿Qué representa exactamente el S&P Merval?",
+     o:["El índice amplio del mercado argentino","El índice insignia que mide el comportamiento de las principales acciones líderes del mercado argentino","El índice de CEDEARs","El índice de volatilidad"],c:1,
+     e:"El S&P Merval es el índice insignia del mercado accionario argentino: mide el comportamiento de las principales acciones líderes cotizadas en BYMA, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el S&P/BYMA Argentina General?",
+     o:["El índice amplio del mercado accionario argentino, que abarca un universo mayor que el Merval","El índice insignia","El índice de CEDEARs","El índice de volatilidad"],c:0,
+     e:"El S&P/BYMA Argentina General es el índice amplio del mercado argentino: incluye un universo mayor de acciones que el S&P Merval, que se limita al panel líder."},
+
+    {p:"¿Qué son las Obligaciones Negociables en Argentina?",
+     o:["Bonos corporativos emitidos por empresas argentinas en el mercado local","Títulos públicos soberanos","Acciones preferenciales","CEDEARs"],c:0,
+     e:"Las Obligaciones Negociables son bonos corporativos emitidos por empresas argentinas en el mercado local, parte central de la renta fija privada."},
+
+    {p:"¿Qué son los cheques de pago diferido o pagarés bursátiles Pyme en Argentina?",
+     o:["Instrumentos de financiamiento de corto plazo para Pymes negociados en el mercado bursátil","Bonos soberanos","Acciones líderes","CEDEARs"],c:0,
+     e:"Los cheques de pago diferido o pagarés bursátiles Pyme son instrumentos de financiamiento de corto plazo para Pymes negociados en el mercado bursátil, parte de la renta fija argentina."},
+
+    {p:"¿Qué son los Fondos Comunes de Inversión (FCI) en Argentina?",
+     o:["Vehículos agrupados que invierten en portafolios diversificados de renta fija y/o variable","Futuros sobre el Merval","Bonos de deuda pública","CEDEARs"],c:0,
+     e:"Los Fondos Comunes de Inversión (FCI) son vehículos agrupados que invierten en portafolios diversificados de renta fija y/o variable, gestionados por profesionales. Son el equivalente argentino a los fondos mutuos."},
+
+    {p:"¿Qué es un Forward Cambiario OTC en Argentina?",
+     o:["Un contrato bilateral sobre divisas (ej. USD/ARS) negociado fuera de bolsa","Un futuro estandarizado sobre el Merval","Un swap de tasas","Una caución bursátil"],c:0,
+     e:"El Forward Cambiario OTC es un contrato bilateral sobre divisas (ej. USD/ARS) negociado fuera de bolsa (Over-The-Counter), usado para cobertura cambiaria corporativa e institucional."},
+
+    {p:"¿Qué es un Swap de monedas en Argentina?",
+     o:["Un swap que intercambia flujos en distintas monedas, negociado en el mercado OTC entre entidades financieras","Un futuro sobre el Merval","Una caución bursátil","Un CEDEAR"],c:0,
+     e:"Los Swaps de monedas son swaps que intercambian flujos en distintas monedas, negociados en el mercado OTC entre entidades financieras para cubrir riesgo cambiario y de tasas."},
+
+    {p:"¿Qué son las Cauciones Bursátiles en Argentina?",
+     o:["Préstamos de corto plazo garantizados por títulos depositados en Caja de Valores","Futuros sobre el Merval","Bonos soberanos","CEDEARs"],c:0,
+     e:"Las Cauciones Bursátiles son préstamos de corto plazo garantizados por títulos depositados en Caja de Valores. Es el instrumento de liquidez dominante del mercado argentino."},
+
+    {p:"¿Qué es un Warrant en Argentina?",
+     o:["Un título de crédito emitido sobre depósitos de mercaderías para respaldo de financiamiento","Un futuro sobre el Merval","Una caución bursátil","Un CEDEAR"],c:0,
+     e:"En Argentina, el Warrant es un título de crédito emitido sobre depósitos de mercaderías para respaldo de financiamiento, típicamente usado en el sector agropecuario."},
+
+    {p:"¿Qué son los Fideicomisos Financieros en Argentina?",
+     o:["Vehículos de titulización de activos que emiten títulos de deuda respaldados por flujos futuros","Fondos de pensión","Futuros sobre el Merval","CEDEARs"],c:0,
+     e:"Los Fideicomisos Financieros son vehículos de titulización de activos que emiten títulos de deuda respaldados por flujos futuros (por ejemplo, préstamos, facturas, etc.). Su uso es obligatorio de calificar para emisiones de oferta pública."}
+  ]
+},
+
+/* ================= CHILE (BCS) ================= */
+{
+  pais:"Chile (BCS)", bandera:"🇨🇱",
+  preguntas:[
+    {p:"¿A qué holding regional pertenece la Bolsa de Comercio de Santiago?",
+     o:["Al MILA (Mercado Integrado Latinoamericano)","A nuam exchange (holding regional de Colombia, Chile y Perú)","A Euronext N.V. (bolsa paneuropea)","A BME (Bolsas y Mercados Españoles)"],c:1,
+     e:"La Bolsa de Comercio de Santiago forma parte de nuam exchange, el mismo holding regional al que pertenece la BVC colombiana."},
+
+    {p:"¿Cuál es el motor transaccional de la Bolsa de Santiago?",
+     o:["SEBRA (sistema de la Bolsa de Santiago)","Telepregón","SIBE (Sistema de Interconexión Bursátil Español)","Optiq (motor de Euronext)"],c:1,
+     e:"El motor transaccional es Telepregón, que acopla automáticamente las órdenes según prioridad de precio y tiempo. SEBRA es otro sistema de la bolsa chilena."},
+
+    {p:"¿Cuál es el índice insignia del mercado chileno?",
+     o:["S&P/CLX IGPA (índice amplio)","S&P/CLX IPSA (índice insignia)","S&P/CLX INTER-10 (índice de valores líquidos)","MSCI COLCAP (índice colombiano)"],c:1,
+     e:"El S&P/CLX IPSA es el índice insignia; el IGPA es más amplio y el INTER-10 agrupa valores con mayor liquidez."},
+
+    {p:"¿Cuántas calificaciones independientes exige la CMF para las emisiones públicas de títulos de deuda en Chile?",
+     o:["Una","Dos","Tres","Ninguna"],c:1,
+     e:"Por normativa de la CMF (Comisión para el Mercado Financiero), las emisiones públicas de títulos de deuda requieren al menos dos calificaciones independientes vigentes."},
+
+    {p:"¿Cuál es el derivado más líquido y grande de Chile?",
+     o:["Futuro de IPSA","Forward FX (forward de tipo de cambio)","Swap ICP (swap de tasa promedio cámara)","Opción sobre acciones"],c:1,
+     e:"El Forward FX es el instrumento derivado más líquido y grande de Chile, utilizado intensivamente por las AFPs (Administradoras de Fondos de Pensiones) y por corporativos para cobertura cambiaria."},
+
+    {p:"¿Cómo se denomina la escala de corto plazo chilena?",
+     o:["Nivel 1 a Nivel 5","A-1 a A-4","F1 a F3","P1 a P3"],c:0,
+     e:"La escala de corto plazo chilena utiliza niveles desde Nivel 1 (el más alto) hasta Nivel 5."},
+
+    {p:"¿Qué entidad realiza la custodia, compensación y liquidación en Chile?",
+     o:["Caja de Valores (Argentina)","Depósito Central de Valores (DCV)","Iberclear (España)","Indeval (México)"],c:1,
+     e:"El Depósito Central de Valores (DCV) realiza la custodia, compensación y liquidación mediante anotaciones en cuenta para garantizar fondos y títulos."},
+
+    {p:"¿Cuáles de estas calificadoras operan en Chile?",
+     o:["RAM y MARC (Malasia)","Feller Rate, ICR Chile y Humphreys","CRISIL e ICRA (India)","JCR y R&I (Japón)"],c:1,
+     e:"En Chile operan Feller Rate, ICR Chile, Humphreys, Fitch Ratings Chile y Moody's Local Chile, todas reguladas por la CMF."},
+
+    {p:"¿Qué sistema de difusión de datos de mercado utiliza la Bolsa de Santiago?",
+     o:["Datatec","InfoSEL (México)","RNS (Londres)","TDnet (Japón)"],c:0,
+     e:"Datatec e interfaces de Market Data de la Bolsa de Santiago son sus sistemas de difusión de datos, integrados con Bloomberg, Refinitiv y FactSet."},
+
+    {p:"¿Qué tipo de swap destaca en Chile para transformar flujos de tasa y moneda?",
+     o:["Swaps de Tasa de Interés Promedio Cámara (ICP) y Cross Currency Swaps","Interest Rate Swaps sobre ESTR (zona euro)","Swaps DI/Pre (Brasil)","MIBOR OIS (India)"],c:0,
+     e:"En Chile destacan los Swaps de Tasa de Interés Promedio Cámara (ICP) y los Cross Currency Swaps, usados para transformar flujos de tasa y moneda."},
+
+    {p:"¿Qué representa exactamente el S&P/CLX IPSA?",
+     o:["El índice de precios que mide el comportamiento de las acciones más líquidas de la Bolsa de Santiago","El índice amplio del mercado chileno","El índice de valores con mayor liquidez (INTER-10)","El índice de volatilidad"],c:0,
+     e:"El S&P/CLX IPSA (Índice de Precio Selectivo de Acciones) es el índice insignia de la Bolsa de Santiago: mide el comportamiento de las acciones más líquidas del mercado chileno, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el S&P/CLX IGPA?",
+     o:["El índice amplio del mercado accionario chileno, que abarca un universo mayor que el IPSA","El índice insignia","El índice de valores líquidos (INTER-10)","El índice de volatilidad"],c:0,
+     e:"El S&P/CLX IGPA (Índice General de Precios de Acciones) es el índice amplio del mercado chileno: abarca un universo mayor de acciones que el IPSA, que se limita a las más líquidas."},
+
+    {p:"¿Qué es el S&P/CLX INTER-10?",
+     o:["El índice que agrupa valores con mayor liquidez y presencia bursátil del mercado chileno","El índice insignia","El índice amplio","El índice de volatilidad"],c:0,
+     e:"El S&P/CLX INTER-10 es el índice que agrupa valores con mayor liquidez y presencia bursátil del mercado chileno, seleccionados a partir del IGPA."},
+
+    {p:"¿Qué son las Unidades de Fomento (UF) en Chile?",
+     o:["Una unidad de cuenta indexada a la inflación, usada como subyacente de futuros y en instrumentos financieros","Un tipo de acción preferencial","Un futuro sobre el IPSA","Un bono corporativo"],c:0,
+     e:"La UF (Unidad de Fomento) es una unidad de cuenta indexada a la inflación, ampliamente usada en instrumentos financieros chilenos y como subyacente de futuros en la Bolsa de Santiago."},
+
+    {p:"¿Qué son los Depósitos a Plazo en Chile?",
+     o:["Instrumentos de renta fija emitidos por bancos, con plazo y tasa definidos","Bonos de deuda pública","Acciones líderes","Fondos mutuos"],c:0,
+     e:"Los Depósitos a Plazo son instrumentos de renta fija emitidos por bancos, con plazo y tasa definidos, parte de la renta fija del mercado chileno."},
+
+    {p:"¿Qué son los Fondos Mutuos en Chile?",
+     o:["Vehículos agrupados que invierten en portafolios diversificados, administrados por AGFs","Futuros sobre el IPSA","Bonos de deuda pública","Acciones preferentes"],c:0,
+     e:"Los Fondos Mutuos son vehículos agrupados que invierten en portafolios diversificados de renta fija y/o variable, administrados por AGFs (Administradoras Generales de Fondos)."},
+
+    {p:"¿Qué son las AGFs en Chile?",
+     o:["Administradoras Generales de Fondos, que gestionan fondos mutuos y de inversión","Agencias de calificación de riesgo","Asociaciones de bancos","Autorreguladores del mercado"],c:0,
+     e:"Las AGFs (Administradoras Generales de Fondos) son las entidades que gestionan fondos mutuos y fondos de inversión públicos y privados en Chile."},
+
+    {p:"¿Qué es un Forward FX en Chile?",
+     o:["Un contrato a plazo sobre tipo de cambio, el derivado más líquido del mercado chileno","Un futuro sobre el IPSA","Un swap de tasas","Una caución"],c:0,
+     e:"El Forward FX es un contrato a plazo sobre tipo de cambio. Es el derivado más líquido y grande de Chile, usado intensivamente por AFPs y corporativos para cobertura cambiaria."},
+
+    {p:"¿Qué es un Swap ICP en Chile?",
+     o:["Un swap de Tasa de Interés Promedio Cámara (ICP), usado para transformar flujos de tasa","Un swap de divisas","Un futuro sobre el IPSA","Una opción sobre acciones"],c:0,
+     e:"El Swap ICP es un swap de Tasa de Interés Promedio Cámara, usado para transformar flujos de tasa (por ejemplo, de tasa fija a flotante o viceversa) en el mercado chileno."},
+
+    {p:"¿Qué son las Ventas con Pacto de Retrocompra (Repos) en Chile?",
+     o:["Operaciones de venta de bonos con pacto de recompra, usadas para gestión de liquidez de corto plazo","Futuros sobre el IPSA","Swaps de tasas","Fondos mutuos"],c:0,
+     e:"Las Ventas con Pacto de Retrocompra (Repos) son operaciones de venta de bonos con pacto de recompra, usadas para gestión de liquidez de corto plazo y arbitraje de tasa en el mercado chileno."}
+  ]
+},
+
+/* ================= MILA ================= */
+{
+  pais:"MILA", bandera:"🌎",
+  preguntas:[
+    {p:"¿Qué países integran el MILA?",
+     o:["Brasil, Argentina, Chile y Colombia","Chile, Colombia, Perú y México","México, Brasil, Perú y Chile","Colombia, Ecuador, Perú y Chile"],c:1,
+     e:"El MILA (Mercado Integrado Latinoamericano) integra las bolsas de valores de Chile, Colombia, Perú y México (Alianza del Pacífico)."},
+
+    {p:"¿Qué es exactamente el MILA?",
+     o:["Una bolsa física única con personería jurídica propia","Una iniciativa de integración bursátil transfronteriza, sin bolsa física única","Un banco central regional","Un fondo de inversión colectiva regional"],c:1,
+     e:"El MILA no es una bolsa física única con personería jurídica independiente, sino una infraestructura operativa y tecnológica de mercado que permite la negociación interconectada de instrumentos entre los cuatro países."},
+
+    {p:"¿Cómo funciona técnicamente el MILA?",
+     o:["Con un único motor de negociación regional","Con enrutamiento transfronterizo de órdenes entre brókers locales","Con subastas presenciales","Con un depósito de valores único regional"],c:1,
+     e:"Funciona con un modelo de enrutamiento transfronterizo de órdenes basado en acuerdos de intermediación entre firmas corredoras de los cuatro países; la compensación se coordina entre los depósitos centrales mediante cuentas espejo."},
+
+    {p:"¿Cuál es el índice de referencia del MILA?",
+     o:["S&P MILA Pacific Alliance Select / S&P MILA 40","MSCI COLCAP (Colombia)","S&P/CLX IPSA (Chile)","Nifty 50 (India)"],c:0,
+     e:"Los índices de precios del MILA son el S&P MILA Pacific Alliance Select, el S&P MILA Pacific Alliance 40 y la familia de índices sectoriales S&P MILA."},
+
+    {p:"¿Qué escala se usa para evaluar emisiones y portafolios transfronterizos en el MILA?",
+     o:["La Escala Nacional de cada país","La Escala Internacional","Una escala regional MILA propia","La escala .mx (México)"],c:1,
+     e:"Las emisiones y portafolios transfronterizos se evalúan con la Escala Internacional, que permite comparar objetivamente el riesgo de crédito entre emisores de distintos países; para colocaciones domésticas se mantienen las escalas nacionales."},
+
+    {p:"¿Qué protocolo utiliza la red de interconexión electrónica del MILA?",
+     o:["FIX (Financial Information eXchange)","SWIFT (Society for Worldwide Interbank Financial Telecommunication)","ISO 20022","HTTP"],c:0,
+     e:"La red de interconexión electrónica se basa en el protocolo FIX (Financial Information eXchange), que enlaza los motores de negociación locales bajo el modelo de enrutamiento del MILA."},
+
+    {p:"¿Cómo se agrupan funcionalmente los reguladores del MILA?",
+     o:["En la ESMA (European Securities and Markets Authority)","En el Comité de Autoridades Reguladoras del MILA","En la SEC (Securities and Exchange Commission)","En el FMI (Fondo Monetario Internacional)"],c:1,
+     e:"Los entes reguladores y supervisores de los cuatro países se agrupan funcionalmente en el Comité de Autoridades Reguladoras del MILA."},
+
+    {p:"¿Cuál es el pilar fundamental del MILA?",
+     o:["La renta fija","La renta variable","Los derivados","Las divisas"],c:1,
+     e:"La renta variable es el pilar fundamental del MILA. La renta fija, aunque permite acceso institucional a deuda pública y bonos corporativos, no fue el foco inicial de la integración."},
+
+    {p:"¿Qué tipo de derivado es fundamental para la cobertura del riesgo cambiario transfronterizo en portafolios MILA?",
+     o:["Los NDF (Non-Delivery Forward) sobre divisas andinas y mexicanas","Los futuros sobre el IPSA (Chile)","Las opciones sobre el Merval (Argentina)","Los swaps sobre ESTR (zona euro)"],c:0,
+     e:"Los NDF (Non-Delivery Forwards) sobre divisas andinas y mexicanas son fundamentales para la cobertura del riesgo cambiario transfronterizo en portafolios MILA."},
+
+    {p:"¿Qué representa el S&P MILA Pacific Alliance Select?",
+     o:["El índice de referencia del MILA que agrupa las acciones más representativas de los cuatro países","El índice de renta fija regional","El índice de volatilidad regional","El índice de derivados regional"],c:0,
+     e:"El S&P MILA Pacific Alliance Select es el índice de referencia del MILA: agrupa las acciones más representativas de los cuatro países miembros, permitiendo una exposición diversificada a la región."},
+
+    {p:"¿Qué es el S&P MILA Pacific Alliance 40?",
+     o:["El índice que agrupa las 40 acciones más representativas de los cuatro países del MILA","El índice amplio del MILA","El índice de volatilidad","El índice de deuda pública regional"],c:0,
+     e:"El S&P MILA Pacific Alliance 40 es el índice que agrupa las 40 acciones más representativas y líquidas de los cuatro países del MILA, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es un Broker-Dealer en el contexto del MILA?",
+     o:["Un intermediario que actúa como bróker (por cuenta de terceros) y dealer (por cuenta propia)","Un banco central","Un fondo de pensiones","Una calificadora de riesgo"],c:0,
+     e:"Un Broker-Dealer es un intermediario que actúa como bróker (ejecutando órdenes por cuenta de terceros) y dealer (operando por cuenta propia). Son actores clave del modelo de enrutamiento transfronterizo del MILA."},
+
+    {p:"¿Qué son los Depósitos Centrales de Valores (DCVs) en el MILA?",
+     o:["Entidades que custodian y liquidan los valores de cada país, coordinadas mediante cuentas espejo","Bancos centrales","Fondos de pensiones","Calificadoras de riesgo"],c:0,
+     e:"Los Depósitos Centrales de Valores (DCVs) son entidades que custodian y liquidan los valores de cada país. En el MILA se coordinan mediante convenios de cuentas espejo y custodia global para garantizar la entrega contra pago."},
+
+    {p:"¿Qué es el protocolo FIX en el contexto del MILA?",
+     o:["Un estándar de mensajería electrónica para el enrutamiento de órdenes entre los motores de negociación","Un tipo de derivado","Un índice bursátil","Un fondo de inversión"],c:0,
+     e:"El protocolo FIX (Financial Information eXchange) es un estándar de mensajería electrónica que permite el enrutamiento de órdenes entre los motores de negociación de los cuatro países del MILA."},
+
+    {p:"¿Qué son las Autopistas de Información Financiera en el MILA?",
+     o:["Sistemas de integración de información de los reguladores para la consulta transfronteriza de hechos relevantes y estados financieros","Carreteras físicas","Redes de fibra óptica","Plataformas de derivados"],c:0,
+     e:"Las Autopistas de Información Financiera son los sistemas de integración de información de los reguladores que permiten la consulta transfronteriza de hechos relevantes e información financiera de las emisoras registradas en el MILA."},
+
+    {p:"¿Qué tipo de ETFs regionales existen en el MILA?",
+     o:["ETFs que replican índices regionales latinoamericanos y permiten diversificación geográfica","ETFs de renta fija global","ETFs de commodities","ETFs de divisas"],c:0,
+     e:"En el MILA existen ETFs regionales que replican índices latinoamericanos y permiten a los inversionistas acceder a una canasta diversificada de acciones de la región con un solo instrumento."},
+
+    {p:"¿Qué son los Fondos de Inversión Colectiva (FIC) con mandato regional en el MILA?",
+     o:["Fondos que invierten en portafolios diversificados de los países del MILA","Fondos de pensión","Fondos de cobertura","Fondos de capital privado"],c:0,
+     e:"Los Fondos de Inversión Colectiva (FIC) con mandato regional son fondos que invierten en portafolios diversificados de los países del MILA, gestionados por profesionales, permitiendo exposición regional diversificada."},
+
+    {p:"¿Qué es un NDF (Non-Delivery Forward) sobre divisas andinas?",
+     o:["Un forward sin entrega física que se liquida por diferencias en efectivo","Un futuro estandarizado","Un swap de tasas","Una opción de compra"],c:0,
+     e:"Un NDF (Non-Delivery Forward) es un forward sin entrega física del activo subyacente: se liquida por diferencias en efectivo. Los NDF sobre divisas andinas y mexicanas son fundamentales para la cobertura del riesgo cambiario transfronterizo en portafolios MILA."},
+
+    {p:"¿Qué es un Cross Currency Swap en el contexto del MILA?",
+     o:["Un swap que intercambia flujos en distintas monedas de la región (ej. USD vs monedas locales)","Un swap de tasas en la misma moneda","Un futuro sobre índices","Una opción sobre divisas"],c:0,
+     e:"Un Cross Currency Swap en el MILA es un swap que intercambia flujos de pago en distintas monedas (por ejemplo, USD vs monedas locales andinas), usado para cubrir riesgo cambiario y de tasas de interés de forma conjunta."},
+
+    {p:"¿Qué son los Warrants en el contexto del MILA?",
+     o:["Títulos opcionales emitidos en bolsas locales sobre canastas accionales","Bonos de deuda pública","Fondos de inversión","Futuros sobre índices"],c:0,
+     e:"Los Warrants en el MILA son títulos opcionales emitidos en las bolsas locales sobre canastas accionales, que otorgan el derecho (no la obligación) de comprar o vender los activos subyacentes."},
+
+    {p:"¿Qué son los Repos, Simultáneas, Cauciones y Carruseles en el MILA?",
+     o:["Operaciones monetarias de compra/venta con pacto de recompra para fondeo de corto plazo y arbitraje","Futuros sobre índices","Opciones sobre acciones","Swaps de divisas"],c:0,
+     e:"Los Repos, Simultáneas, Cauciones y Carruseles son operaciones monetarias de compra/venta con pacto de recompra, utilizadas por corredoras comisionistas para fondeo de corto plazo y arbitraje sobre títulos soberanos o acciones en el MILA."}
+  ]
+},
+
+/* ================= ALEMANIA (Börse Frankfurt) ================= */
+{
+  pais:"Alemania (Börse Frankfurt)", bandera:"🇩🇪",
+  preguntas:[
+    {p:"¿Cuál es la plaza bursátil principal de Alemania?",
+     o:["Börse Frankfurt (operada por Deutsche Börse AG)","Börse Berlin","Euronext Frankfurt","Xetra München"],c:0,
+     e:"Börse Frankfurt, operada por el grupo Deutsche Börse AG, es la plaza bursátil principal de Alemania y uno de los centros financieros más grandes e influyentes del mundo."},
+
+    {p:"¿Cuál es el índice insignia alemán compuesto por las 40 mayores empresas?",
+     o:["MDAX (mid-caps)","DAX 40 (índice insignia)","SDAX (small-caps)","TecDAX (tecnológicas)"],c:1,
+     e:"El DAX 40 agrupa a las 40 empresas blue-chip de mayor capitalización y liquidez. El MDAX son mid-caps, el SDAX small-caps y el TecDAX tecnológicas."},
+
+    {p:"¿Qué plataforma electrónica de negociación utiliza Deutsche Börse?",
+     o:["T7 / Xetra","Optiq (motor de Euronext)","SETS (motor de la Bolsa de Londres)","PUMA Trading System (motor de B3)"],c:0,
+     e:"T7 es la plataforma electrónica de ultra baja latencia de Deutsche Börse, comercializada bajo la marca Xetra para renta variable y ETFs."},
+
+    {p:"¿Qué índice mide la volatilidad implícita del DAX?",
+     o:["VIBEX (España)","VCAC (Francia)","VDAX-NEW (Alemania)","India VIX (India)"],c:2,
+     e:"El VDAX-NEW mide la volatilidad implícita del DAX derivada de opciones sobre el índice."},
+
+    {p:"¿Quién actúa como Contraparte Central en el mercado alemán?",
+     o:["Clearstream Banking AG","Eurex Clearing","BaFin (regulador)","Deutsche Bundesbank (banco central)"],c:1,
+     e:"Eurex Clearing actúa como Contraparte Central (CCP); Clearstream Banking AG realiza la custodia centralizada y la liquidación mediante el sistema CASCADE."},
+
+    {p:"¿Cuáles son los futuros de deuda pública más conocidos de Eurex?",
+     o:["Euro-Bund, Euro-Bobl y Euro-Schatz","Gilts y Short Sterling (Reino Unido)","OAT y CAC 40 (Francia)","JGB y TOPIX (Japón)"],c:0,
+     e:"Eurex negocia futuros sobre deuda pública alemana: Euro-Bund (largo plazo), Euro-Bobl (5 años) y Euro-Schatz (2 años)."},
+
+    {p:"¿Qué son los Pfandbriefe alemanes?",
+     o:["Acciones preferenciales sin voto","Bonos garantizados bancarios/hipotecarios altamente seguros y líquidos","Warrants emitidos por bancos","ETFs apalancados"],c:1,
+     e:"Los Pfandbriefe son bonos garantizados bancarios/hipotecarios, considerados instrumentos de renta fija altamente seguros y líquidos dentro del mercado alemán."},
+
+    {p:"¿Qué entidad supervisa el mercado financiero alemán?",
+     o:["BaFin (junto con el Deutsche Bundesbank)","La AMF (Francia)","La FCA (Reino Unido)","La CNMV (España)"],c:0,
+     e:"BaFin (Bundesanstalt für Finanzdienstleistungsaufsicht) es la autoridad supervisora, junto con el Deutsche Bundesbank y la autoridad federal de supervisión bursátil."},
+
+    {p:"¿Qué sistema alemán publica los hechos relevantes bajo la normativa MAR de la Unión Europea?",
+     o:["RNS (Regulatory News Service de Londres)","DGAP (Deutsche Gesellschaft für Ad-hoc-Publizität)","EMISNET (México)","TDnet (Japón)"],c:1,
+     e:"DGAP (Deutsche Gesellschaft für Ad-hoc-Publizität) es el portal de divulgación de hechos relevantes bajo la normativa MAR (Market Abuse Regulation) de la Unión Europea."},
+
+    {p:"¿Cómo se llaman los warrants emitidos por bancos de inversión, muy populares entre los inversores retail alemanes?",
+     o:["CEDEARs (Argentina)","Optionsscheine","Turbos holandeses","SOCIMIs (España)"],c:1,
+     e:"Los Optionsscheine son warrants emitidos por bancos de inversión y son ampliamente populares entre los inversores retail alemanes, junto con los certificados estructurados."},
+
+    {p:"¿Qué representa exactamente el DAX 40?",
+     o:["El índice insignia que agrupa las 40 empresas blue-chip de mayor capitalización y liquidez de la bolsa alemana","El índice de mid-caps","El índice de small-caps","El índice de tecnológicas"],c:0,
+     e:"El DAX 40 es el índice insignia de la bolsa alemana: agrupa las 40 empresas blue-chip de mayor capitalización y liquidez cotizadas en Börse Frankfurt, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el MDAX alemán?",
+     o:["El índice de mid-caps (empresas de capitalización media)","El índice insignia","El índice de small-caps","El índice de tecnológicas"],c:0,
+     e:"El MDAX es el índice de mid-caps de la bolsa alemana: agrupa empresas de capitalización media, excluidas las del DAX 40."},
+
+    {p:"¿Qué es el SDAX alemán?",
+     o:["El índice de small-caps (empresas de pequeña capitalización)","El índice insignia","El índice de mid-caps","El índice de tecnológicas"],c:0,
+     e:"El SDAX es el índice de small-caps de la bolsa alemana: agrupa empresas de pequeña capitalización, excluidas las del DAX 40 y el MDAX."},
+
+    {p:"¿Qué es el TecDAX alemán?",
+     o:["El índice de empresas tecnológicas","El índice insignia","El índice de mid-caps","El índice de small-caps"],c:0,
+     e:"El TecDAX es el índice que agrupa a las principales empresas tecnológicas cotizadas en la bolsa alemana."},
+
+    {p:"¿Qué es el CDAX alemán?",
+     o:["El índice general del mercado alemán, que abarca el conjunto de las acciones cotizadas","El índice insignia","El índice de mid-caps","El índice de tecnológicas"],c:0,
+     e:"El CDAX es el índice general del mercado alemán: abarca el conjunto de las acciones cotizadas en la bolsa alemana, ofreciendo una visión global del mercado."},
+
+    {p:"¿Qué son los Bunds alemanes?",
+     o:["Títulos de deuda pública federal alemana de largo plazo (10/30 años)","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Bunds son los títulos de deuda pública federal alemana de largo plazo (10 y 30 años). Son la referencia de la renta fija de la eurozona."},
+
+    {p:"¿Qué son los Bobls alemanes?",
+     o:["Títulos de deuda pública federal alemana a 5 años","Títulos de deuda a 10/30 años","Títulos de deuda a 2 años","Bonos corporativos"],c:0,
+     e:"Los Bobls son los títulos de deuda pública federal alemana a 5 años, en la parte media de la curva de rendimientos."},
+
+    {p:"¿Qué son los Schatz alemanes?",
+     o:["Títulos de deuda pública federal alemana a 2 años","Títulos de deuda a 5 años","Títulos de deuda a 10/30 años","Bonos corporativos"],c:0,
+     e:"Los Schatz son los títulos de deuda pública federal alemana a 2 años, en la parte corta de la curva de rendimientos."},
+
+    {p:"¿Qué son los Indizierte Bundesanleihen alemanes?",
+     o:["Bonos de deuda pública federal alemana indexados a la inflación","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Indizierte Bundesanleihen son bonos de deuda pública federal alemana indexados a la inflación, que protegen al inversionista de la pérdida de poder adquisitivo."},
+
+    {p:"¿Qué son las Stammaktien alemanas?",
+     o:["Acciones ordinarias con derecho a voto","Acciones preferenciales sin voto","Bonos corporativos","Warrants"],c:0,
+     e:"Las Stammaktien son las acciones ordinarias alemanas, que otorgan derecho a voto al accionista."},
+
+    {p:"¿Qué son las Vorzugsaktien alemanas?",
+     o:["Acciones preferenciales sin voto pero con mayor dividendo (ej. Volkswagen)","Acciones ordinarias con voto","Bonos corporativos","Warrants"],c:0,
+     e:"Las Vorzugsaktien son las acciones preferenciales alemanas: no otorgan derecho a voto pero suelen pagar un mayor dividendo. Un ejemplo clásico es Volkswagen."}
+  ]
+},
+
+/* ================= FRANCIA (Euronext Paris) ================= */
+{
+  pais:"Francia (Euronext Paris)", bandera:"🇫🇷",
+  preguntas:[
+    {p:"¿Cuál es la bolsa principal de Francia?",
+     o:["Euronext Paris","Bourse de Lyon","Euronext Bruselas","BME (España)"],c:0,
+     e:"Euronext Paris forma parte de Euronext N.V., la primera infraestructura bursátil paneuropea, que integra también Ámsterdam, Bruselas, Lisboa, Milán, Dublín y Oslo."},
+
+    {p:"¿Cuál es el motor transaccional propietario de Euronext?",
+     o:["Optiq","T7 (Deutsche Börse)","Millennium (BYMA)","arrowhead (Tokio)"],c:0,
+     e:"Optiq es la plataforma transaccional propietaria de Euronext de ultra baja latencia, que conecta las órdenes enviadas por las empresas de servicios de inversión autorizadas."},
+
+    {p:"¿Cuál es el índice insignia de la bolsa francesa?",
+     o:["SBF 120 (índice amplio)","CAC 40 (índice insignia)","CAC Next 20","CAC All-Shares"],c:1,
+     e:"El CAC 40 es el índice insignia con las 40 mayores empresas cotizadas en Euronext Paris; el SBF 120 es el índice amplio del mercado francés."},
+
+    {p:"¿Cómo se llaman los títulos de deuda pública francesa?",
+     o:["Gilts (Reino Unido)","Bunds (Alemania)","OATs (Obligations Assimilables du Trésor)","BTPs (Italia)"],c:2,
+     e:"Las OATs (Obligations Assimilables du Trésor) son los títulos de deuda pública francesa, e incluyen las OATi/OAT€i indexadas a inflación."},
+
+    {p:"¿Qué índice mide la volatilidad implícita del CAC 40 a 30 días?",
+     o:["VDAX (Alemania)","VCAC (Francia)","VIBEX (España)","VIMEX (México)"],c:1,
+     e:"El índice VCAC mide la volatilidad implícita del CAC 40 a 30 días."},
+
+    {p:"¿Quién es el regulador del mercado de valores en Francia?",
+     o:["AMF (Autorité des Marchés Financiers)","BaFin (Alemania)","CNMV (España)","FCA (Reino Unido)"],c:0,
+     e:"La AMF (Autorité des Marchés Financiers) regula el mercado de valores; la ACPR (Autorité de Contrôle Prudentiel et de Résolution) es la autoridad de control prudencial."},
+
+    {p:"¿Qué calificadora de origen francés, enfocada en ESG y corporativos, opera en Francia?",
+     o:["EthiFinance Ratings","HR Ratings (México)","CRISIL (India)","RAM Rating Services (Malasia)"],c:0,
+     e:"EthiFinance Ratings es una calificadora de origen francés enfocada en ESG y corporativos; junto con Scope Ratings son las agencias paneuropeas que operan en Francia."},
+
+    {p:"¿Qué derivado agrícola es relevante en Euronext París?",
+     o:["Futuros de aceite de palma","Futuros de Trigo Molinero (Milling Wheat)","Futuros de mineral de hierro","Futuros de soya"],c:1,
+     e:"Euronext negocia futuros sobre materias primas agrícolas, destacando el futuro de Trigo Molinero (Milling Wheat)."},
+
+    {p:"¿Qué cuenta de inversión con ventajas fiscales es popular entre los inversores retail franceses?",
+     o:["NISA (Japón)","ISA (Reino Unido)","PEA (Plan d'Épargne en Actions)","401k (EE.UU.)"],c:2,
+     e:"Los inversores retail franceses operan a través de cuentas PEA (Plan d'Épargne en Actions) o cuentas de corretaje tradicionales."},
+
+    {p:"¿Qué entidad actúa como Depósito Central de Valores en Francia?",
+     o:["Euroclear France","Clearstream (Alemania)","Iberclear (España)","CREST (Reino Unido)"],c:0,
+     e:"Euroclear France es el Depósito Central de Valores (CSD), mientras que Euronext Clearing actúa como Contraparte Central (CCP)."},
+
+    {p:"¿Qué representa exactamente el CAC 40?",
+     o:["El índice insignia que agrupa las 40 mayores empresas cotizadas en Euronext Paris","El índice de mid-caps","El índice amplio del mercado francés","El índice de volatilidad"],c:0,
+     e:"El CAC 40 es el índice insignia de la bolsa francesa: agrupa las 40 mayores empresas cotizadas en Euronext Paris, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el CAC Next 20?",
+     o:["El índice que agrupa las siguientes 20 empresas después del CAC 40","El índice insignia","El índice amplio","El índice de volatilidad"],c:0,
+     e:"El CAC Next 20 agrupa las siguientes 20 empresas después del CAC 40, ofreciendo exposición a las empresas de mayor tamaño que no están en el índice insignia."},
+
+    {p:"¿Qué es el SBF 120?",
+     o:["El índice amplio del mercado francés, que abarca 120 empresas","El índice insignia","El índice de mid-caps","El índice de volatilidad"],c:0,
+     e:"El SBF 120 es el índice amplio del mercado francés: abarca 120 empresas cotizadas en Euronext Paris, ofreciendo una visión más amplia que el CAC 40."},
+
+    {p:"¿Qué es el CAC All-Shares?",
+     o:["El índice que abarca el conjunto de las acciones cotizadas en Euronext Paris","El índice insignia","El índice de mid-caps","El índice de volatilidad"],c:0,
+     e:"El CAC All-Shares es el índice que abarca el conjunto de las acciones cotizadas en Euronext Paris, ofreciendo una visión global del mercado francés."},
+
+    {p:"¿Qué es el VCAC?",
+     o:["El índice de volatilidad implícita del CAC 40 a 30 días","El índice amplio del mercado","El índice de mid-caps","El índice de deuda pública"],c:0,
+     e:"El VCAC es el índice de volatilidad implícita del CAC 40 a 30 días, derivado de las opciones sobre el índice."},
+
+    {p:"¿Qué son las OATs francesas?",
+     o:["Títulos de deuda pública francesa (Obligations Assimilables du Trésor)","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Las OATs (Obligations Assimilables du Trésor) son los títulos de deuda pública francesa, la referencia de la renta fija soberana del país."},
+
+    {p:"¿Qué son las OATi/OAT€i francesas?",
+     o:["OATs indexadas a la inflación","OATs a tasa fija","Bonos corporativos","Acciones preferenciales"],c:0,
+     e:"Las OATi/OAT€i son OATs indexadas a la inflación, que protegen al inversionista de la pérdida de poder adquisitivo."},
+
+    {p:"¿Qué son las Obligations Cautionnées francesas?",
+     o:["Bonos garantizados (caucionados) emitidos por entidades financieras","Bonos corporativos no garantizados","Acciones preferenciales","Warrants"],c:0,
+     e:"Las Obligations Cautionnées son bonos garantizados (caucionados) emitidos por entidades financieras, con garantía adicional que mejora su calidad crediticia."},
+
+    {p:"¿Qué son los OPCVM franceses?",
+     o:["Organismos de Inversión Colectiva en Valores Mobiliarios (fondos de inversión)","Bonos de deuda pública","Acciones preferenciales","Futuros sobre el CAC 40"],c:0,
+     e:"Los OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) son los organismos de inversión colectiva en valores mobiliarios franceses, equivalentes a los fondos de inversión."},
+
+    {p:"¿Qué son los FCPs franceses?",
+     o:["Fondos Comunes de Colocación (Fonds Communs de Placement)","Futuros sobre el CAC 40","Bonos corporativos","Acciones preferenciales"],c:0,
+     e:"Los FCPs (Fonds Communs de Placement) son fondos comunes de colocación franceses, un tipo de fondo de inversión colectiva."}
+  ]
+},
+
+/* ================= ESPAÑA (BME) ================= */
+{
+  pais:"España (BME)", bandera:"🇪🇸",
+  preguntas:[
+    {p:"¿A qué grupo pertenece Bolsas y Mercados Españoles (BME)?",
+     o:["Euronext (bolsa paneuropea)","SIX Group (grupo suizo)","LSEG (London Stock Exchange Group)","Deutsche Börse (grupo alemán)"],c:1,
+     e:"BME, que integra las bolsas de Madrid, Barcelona, Bilbao y Valencia, es propiedad del grupo suizo SIX Group."},
+
+    {p:"¿Qué sistema gestiona el libro de órdenes continuo en la bolsa española?",
+     o:["SIBE (Sistema de Interconexión Bursátil Español)","Optiq (motor de Euronext)","Telepregón (motor de Santiago)","MEC (Mercado Electrónico Colombiano)"],c:0,
+     e:"El SIBE (Sistema de Interconexión Bursátil Español) gestiona el libro de órdenes continuo acoplando electrónicamente las intenciones de compra y venta por precio y tiempo."},
+
+    {p:"¿Cuál es el índice insignia del mercado español?",
+     o:["IBEX Medium Cap (mid-caps)","IBEX Small Cap (small-caps)","IBEX 35 (índice insignia)","VIBEX (volatilidad)"],c:2,
+     e:"El IBEX 35 es el índice insignia, ponderado por capitalización ajustada por flotante, con las 35 empresas más líquidas de España."},
+
+    {p:"¿Qué índice mide la volatilidad implícita del IBEX 35?",
+     o:["VIBEX (España)","VCAC (Francia)","VDAX (Alemania)","VIMEX (México)"],c:0,
+     e:"El VIBEX es la medida de la volatilidad implícita del IBEX 35."},
+
+    {p:"¿Qué entidad actúa como Depósito Central de Valores en España?",
+     o:["BME Clearing (CCP)","Iberclear (CSD)","Euroclear (Bélgica)","Indeval (México)"],c:1,
+     e:"Iberclear actúa como Depósito Central de Valores (CSD), mientras que BME Clearing asume la función de Contraparte Central (CCP)."},
+
+    {p:"¿Cuál es el regulador del mercado de valores español?",
+     o:["CNMV (Comisión Nacional del Mercado de Valores)","Banco de España","ESMA (autoridad europea)","ACPR (Francia)"],c:0,
+     e:"La CNMV (Comisión Nacional del Mercado de Valores) es el regulador del mercado, junto con el Banco de España y la autoridad europea ESMA."},
+
+    {p:"¿Qué son las SOCIMIs?",
+     o:["Sociedades Cotizadas de Inversión en el Mercado Inmobiliario, equivalentes a los REITs","Fondos de pensiones públicos","Bonos corporativos garantizados","Warrants sobre el IBEX 35"],c:0,
+     e:"Las SOCIMIs son sociedades cotizadas de inversión en el mercado inmobiliario, el equivalente español de los REITs."},
+
+    {p:"¿En qué mercado se negocia la renta fija en España?",
+     o:["SIBE (renta variable)","AIAF (BME Renta Fija)","MEFF (derivados)","Iberclear (depósito)"],c:1,
+     e:"La renta fija se negocia a través de BME Renta Fija (AIAF), que incluye deuda pública (Letras, Bonos y Obligaciones del Estado) y renta fija privada."},
+
+    {p:"¿Qué calificadora española, antes conocida como Axesor Rating, opera bajo regulación ESMA?",
+     o:["EthiFinance Ratings","Feller Rate (Chile)","Verum (México)","BRC Ratings (Colombia)"],c:0,
+     e:"EthiFinance Ratings (antes Axesor Rating) es una calificadora registrada en ESMA que opera en España junto con Scope Ratings y las grandes globales."},
+
+    {p:"¿Dónde se negociaban tradicionalmente los derivados estandarizados en España?",
+     o:["MEFF (Mercado Español de Opciones y Futuros Financieros)","SIBE (renta variable)","AIAF (renta fija)","Iberclear (depósito)"],c:0,
+     e:"MEFF (Mercado Español de Opciones y Futuros Financieros) está hoy integrado funcionalmente en BME Clearing / SIX, y negocia futuros sobre IBEX 35, acciones y bonos del Estado."},
+
+    {p:"¿Qué representa exactamente el IBEX 35?",
+     o:["El índice insignia que agrupa las 35 empresas más líquidas de la bolsa española, ponderado por capitalización ajustada por flotante","El índice de mid-caps","El índice de small-caps","El índice de volatilidad"],c:0,
+     e:"El IBEX 35 es el índice insignia de la bolsa española: agrupa las 35 empresas más líquidas cotizadas en el mercado continuo, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el IBEX Medium Cap?",
+     o:["El índice de empresas de capitalización media","El índice insignia","El índice de small-caps","El índice de volatilidad"],c:0,
+     e:"El IBEX Medium Cap es el índice que agrupa empresas de capitalización media de la bolsa española, excluidas las del IBEX 35."},
+
+    {p:"¿Qué es el IBEX Small Cap?",
+     o:["El índice de empresas de pequeña capitalización","El índice insignia","El índice de mid-caps","El índice de volatilidad"],c:0,
+     e:"El IBEX Small Cap es el índice que agrupa empresas de pequeña capitalización de la bolsa española."},
+
+    {p:"¿Qué es el IBEX Growth Market?",
+     o:["El mercado para Pymes en expansión de la bolsa española","El índice insignia","El índice de mid-caps","El índice de volatilidad"],c:0,
+     e:"El IBEX Growth Market es el mercado de la bolsa española dirigido a Pymes en expansión, similar al AIM británico o al BME Growth."},
+
+    {p:"¿Qué es el VIBEX?",
+     o:["El índice de volatilidad implícita del IBEX 35","El índice amplio del mercado","El índice de mid-caps","El índice de deuda pública"],c:0,
+     e:"El VIBEX es el índice de volatilidad implícita del IBEX 35, derivado de las opciones sobre el índice."},
+
+    {p:"¿Qué son las Letras del Tesoro españolas?",
+     o:["Títulos de deuda pública a corto plazo","Bonos de deuda pública a medio/largo plazo","Cédulas hipotecarias","Pagarés de empresa"],c:0,
+     e:"Las Letras del Tesoro son títulos de deuda pública a corto plazo emitidos por el Tesoro Público español, en la parte corta de la curva."},
+
+    {p:"¿Qué son los Bonos y Obligaciones del Estado españoles?",
+     o:["Títulos de deuda pública a medio y largo plazo","Títulos de deuda a corto plazo","Cédulas hipotecarias","Pagarés de empresa"],c:0,
+     e:"Los Bonos y Obligaciones del Estado son títulos de deuda pública a medio y largo plazo emitidos por el Tesoro Público español."},
+
+    {p:"¿Qué son las Cédulas Hipotecarias españolas?",
+     o:["Bonos garantizados por préstamos hipotecarios, emitidos por bancos","Títulos de deuda pública","Acciones preferenciales","Warrants"],c:0,
+     e:"Las Cédulas Hipotecarias son bonos garantizados por préstamos hipotecarios, emitidos por bancos españoles. Son instrumentos de renta fija privada de alta calidad crediticia."},
+
+    {p:"¿Qué son los Pagarés de Empresa españoles?",
+     o:["Instrumentos de financiamiento de corto plazo emitidos por empresas","Bonos de deuda pública","Cédulas hipotecarias","Acciones preferenciales"],c:0,
+     e:"Los Pagarés de Empresa son instrumentos de financiamiento de corto plazo emitidos por empresas, parte de la renta fija privada española."},
+
+    {p:"¿Qué es la Deuda Subordinada en España?",
+     o:["Deuda que, en caso de quiebra, se paga después de la deuda ordinaria","Deuda de deuda pública","Acciones preferenciales","Warrants"],c:0,
+     e:"La Deuda Subordinada es deuda que, en caso de quiebra del emisor, se paga después de la deuda ordinaria, pero antes que los accionistas. Forma parte de la renta fija privada española."}
+  ]
+},
+
+/* ================= INGLATERRA (LSE) ================= */
+{
+  pais:"Reino Unido (LSE)", bandera:"🇬🇧",
+  preguntas:[
+    {p:"¿A qué grupo pertenece la Bolsa de Valores de Londres (LSE)?",
+     o:["LSEG (London Stock Exchange Group)","SIX Group (Suiza)","Euronext N.V. (paneuropea)","JPX (Japan Exchange Group)"],c:0,
+     e:"La LSE pertenece a LSEG (London Stock Exchange Group) y es una de las bolsas más antiguas e importantes del planeta."},
+
+    {p:"¿Qué motor ejecuta las transacciones de acciones de alta liquidez en la LSE?",
+     o:["SETS (Stock Exchange Trading System)","SETSqx (para menor liquidez)","SEAQ (modelo guiado por cotización)","Optiq (motor de Euronext)"],c:0,
+     e:"SETS (Stock Exchange Trading System) es el libro de órdenes electrónico conducido por precio y tiempo; SETSqx y SEAQ se usan para acciones de menor liquidez."},
+
+    {p:"¿Cuál es el índice insignia de la LSE, con las 100 mayores empresas?",
+     o:["FTSE 250 (mid-caps)","FTSE 100 (índice insignia)","FTSE 350 (índice combinado)","FTSE All-Share (índice amplio)"],c:1,
+     e:"El FTSE 100 agrupa las 100 mayores empresas globales cotizadas en la LSE; el FTSE 250 son las mid-caps con mayor enfoque doméstico."},
+
+    {p:"¿Cómo se llaman los bonos de deuda pública del Reino Unido?",
+     o:["Bunds (Alemania)","OATs (Francia)","Gilts (Reino Unido)","BTPs (Italia)"],c:2,
+     e:"Los UK Gilts son la deuda pública británica, e incluyen los Index-Linked Gilts ligados a la inflación."},
+
+    {p:"¿Qué sistema realiza la custodia y liquidación de títulos en el Reino Unido?",
+     o:["CREST (Euroclear UK & International)","Iberclear (España)","Clearstream (Alemania)","CDP (Singapur)"],c:0,
+     e:"CREST, operado por Euroclear UK & International, realiza la custodia y liquidación desmaterializada en ciclo T+2."},
+
+    {p:"¿Qué servicio es la fuente oficial de comunicación de hechos relevantes y reportes financieros en la LSE?",
+     o:["RNS (Regulatory News Service)","DGAP (Alemania)","EMISNET (México)","SGXNet (Singapur)"],c:0,
+     e:"RNS (Regulatory News Service) es el servicio oficial de comunicación de hechos relevantes y reportes financieros de las emisoras listadas en la LSE."},
+
+    {p:"¿Qué mercado de la LSE está dirigido a empresas de menor tamaño?",
+     o:["Main Market Premium","AIM (Alternative Investment Market)","Catalist (Singapur)","STAR Market (China)"],c:1,
+     e:"El AIM (Alternative Investment Market) es el mercado de la LSE para empresas de menor tamaño, frente al Main Market con sus segmentos Premium y Standard."},
+
+    {p:"¿Dónde se negocian los futuros y opciones sobre el petróleo Brent?",
+     o:["ICE Futures Europe","LME (London Metal Exchange)","Eurex (Alemania)","CFFEX (China)"],c:0,
+     e:"ICE Futures Europe negocia los futuros y opciones sobre el Brent; el LME (London Metal Exchange) es el mercado de metales."},
+
+    {p:"¿Qué entidad compensa la mayor parte del volumen global de swaps de tasas de interés (IRS)?",
+     o:["LCH SwapClear","Eurex Clearing (Alemania)","JSCC (Japón)","ChinaClear (China)"],c:0,
+     e:"Londres procesa la mayoría del volumen global de Swaps de Tasas de Interés (IRS sobre SONIA, SOFR) a través de LCH SwapClear."},
+
+    {p:"¿Qué reguladores supervisan los servicios financieros en el Reino Unido?",
+     o:["FCA y PRA","BaFin y Bundesbank (Alemania)","AMF y ACPR (Francia)","MAS (Singapur)"],c:0,
+     e:"La FCA (Financial Conduct Authority) y la PRA (Prudential Regulation Authority) son los entes reguladores del mercado británico."},
+
+    {p:"¿Qué representa exactamente el FTSE 100?",
+     o:["El índice insignia que agrupa las 100 mayores empresas globales cotizadas en la LSE, ponderado por capitalización","El índice de mid-caps","El índice amplio","El índice de small-caps"],c:0,
+     e:"El FTSE 100 es el índice insignia de la LSE: agrupa las 100 mayores empresas globales cotizadas en Londres, ponderado por capitalización ajustada por flotante. Muchas son multinacionales con ingresos en divisas."},
+
+    {p:"¿Qué es el FTSE 250?",
+     o:["El índice de mid-caps (empresas de capitalización media) con mayor enfoque doméstico","El índice insignia","El índice amplio","El índice de small-caps"],c:0,
+     e:"El FTSE 250 agrupa las empresas de capitalización media (mid-caps) con mayor enfoque doméstico que el FTSE 100, que está dominado por multinacionales."},
+
+    {p:"¿Qué es el FTSE 350?",
+     o:["El índice combinado del FTSE 100 y el FTSE 250","El índice insignia","El índice de small-caps","El índice amplio"],c:0,
+     e:"El FTSE 350 es el índice combinado del FTSE 100 y el FTSE 250, ofreciendo una visión más amplia del mercado británico."},
+
+    {p:"¿Qué es el FTSE SmallCap?",
+     o:["El índice de empresas de pequeña capitalización","El índice insignia","El índice de mid-caps","El índice amplio"],c:0,
+     e:"El FTSE SmallCap es el índice que agrupa empresas de pequeña capitalización de la bolsa británica."},
+
+    {p:"¿Qué es el FTSE All-Share?",
+     o:["El índice que abarca el conjunto del mercado accionario británico","El índice insignia","El índice de mid-caps","El índice de small-caps"],c:0,
+     e:"El FTSE All-Share es el índice que abarca el conjunto del mercado accionario británico, incluyendo FTSE 100, FTSE 250 y FTSE SmallCap."},
+
+    {p:"¿Qué son los Gilts británicos?",
+     o:["Títulos de deuda pública del Reino Unido","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Gilts son los títulos de deuda pública del Reino Unido, la referencia de la renta fija soberana británica."},
+
+    {p:"¿Qué son los Index-Linked Gilts británicos?",
+     o:["Gilts indexados a la inflación","Gilts a tasa fija","Bonos corporativos","Acciones preferenciales"],c:0,
+     e:"Los Index-Linked Gilts son Gilts indexados a la inflación, que protegen al inversionista de la pérdida de poder adquisitivo."},
+
+    {p:"¿Qué son los Eurobonos que se emiten en Londres?",
+     o:["Bonos internacionales emitidos en una divisa distinta a la del país del emisor","Bonos de deuda pública británica","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Eurobonos son bonos internacionales emitidos en una divisa distinta a la del país del emisor. Londres es el centro neurálgico mundial para la emisión de Eurobonos."},
+
+    {p:"¿Qué son los Investment Trusts británicos?",
+     o:["Fondos cerrados cotizados, tradicionales en el Reino Unido","Fondos de pensiones","Bonos corporativos","Warrants"],c:0,
+     e:"Los Investment Trusts son fondos cerrados cotizados, una figura tradicional en el Reino Unido. Cotizan en la LSE y permiten acceder a carteras diversificadas gestionadas por profesionales."},
+
+    {p:"¿Qué es el AIM británico?",
+     o:["El Alternative Investment Market, mercado de la LSE para empresas de menor tamaño","El índice insignia","El mercado de deuda pública","El mercado de derivados"],c:0,
+     e:"El AIM (Alternative Investment Market) es el mercado de la LSE para empresas de menor tamaño, con requisitos de cotización más flexibles que el Main Market."}
+  ]
+},
+
+/* ================= PAÍSES BAJOS ================= */
+{
+  pais:"Países Bajos (Euronext Amsterdam)", bandera:"🇳🇱",
+  preguntas:[
+    {p:"¿Cuál es considerada la bolsa de valores más antigua del mundo?",
+     o:["Euronext Amsterdam","London Stock Exchange","Börse Frankfurt","NYSE"],c:0,
+     e:"Euronext Amsterdam fue creada por la Compañía Holandesa de las Indias Orientales en 1602 y es reconocida históricamente como la bolsa de valores más antigua del mundo."},
+
+    {p:"¿Cuál es el índice insignia de Euronext Amsterdam?",
+     o:["AEX (índice insignia)","AMX (mid-caps)","AScX (small-caps)","DAX (Alemania)"],c:0,
+     e:"El AEX es el índice insignia ponderado por capitalización con las 25 empresas más grandes y líquidas; el AMX son mid-caps y el AScX small-caps."},
+
+    {p:"¿Qué empresa concentra una ponderación extrema en el índice AEX?",
+     o:["ASML (semiconductores)","Heineken (cerveza)","ING Group (banca)","Royal Philips (salud)"],c:0,
+     e:"El gigante de semiconductores ASML (junto con Prosus) tiene una ponderación extrema en el AEX, lo que es un indicador clave de concentración del índice."},
+
+    {p:"¿Qué entidad actúa como Depósito Central de Valores en Países Bajos?",
+     o:["Euroclear Nederland","Clearstream (Alemania)","CREST (Reino Unido)","Iberclear (España)"],c:0,
+     e:"Euroclear Nederland es el CSD, encargado de la custodia electrónica y la entrega contra pago en T+2."},
+
+    {p:"¿Qué reguladores supervisan los mercados financieros en Países Bajos?",
+     o:["AFM y DNB","BaFin y Bundesbank (Alemania)","FCA y PRA (Reino Unido)","CNMV (España)"],c:0,
+     e:"La AFM (Autoriteit Financiële Markten) y el DNB (De Nederlandsche Bank) son los entes reguladores holandeses."},
+
+    {p:"¿Qué popular bróker en línea neerlandés se menciona como vía de acceso para el inversor retail?",
+     o:["DEGIRO","Zerodha (India)","Groww (India)","Angel One (India)"],c:0,
+     e:"Los inversores retail holandeses operan a través de brókers en línea muy populares como DEGIRO o bancos tradicionales como ING y ABN AMRO."},
+
+    {p:"¿Qué tipo de firmas tienen su centro europeo en Países Bajos, destacando Flow Traders y Optiver?",
+     o:["Firmas de trading de alta frecuencia (HFT)","Bancos centrales","Calificadoras de riesgo","Fondos de pensión"],c:0,
+     e:"Países Bajos es el centro europeo líder para el trading de alta frecuencia (HFT), con firmas como Flow Traders y Optiver."},
+
+    {p:"¿Qué producto estructurado es masivamente popular en la cultura inversora holandesa?",
+     o:["Turbos, Warrants y Certificados estructurados","CEDEARs (Argentina)","SOCIMIs (España)","FIIs (Brasil)"],c:0,
+     e:"Existe un mercado masivo de Turbos, Warrants y Certificados estructurados emitidos por bancos, muy populares entre los inversores holandeses."},
+
+    {p:"¿Cómo se llaman los títulos de deuda pública de Países Bajos?",
+     o:["DSL (Dutch State Loans)","Gilts (Reino Unido)","Bunds (Alemania)","OATs (Francia)"],c:0,
+     e:"Los DSL (Dutch State Loans) son los títulos de deuda pública soberana holandesa, a tasa fija y de alto grado crediticio."},
+
+    {p:"¿Qué fondos de pensión neerlandeses se mencionan entre los más grandes de Europa?",
+     o:["APG y PGGM","GIC y Temasek (Singapur)","EPF y PNB (Malasia)","GPIF (Japón)"],c:0,
+     e:"Los fondos de pensión holandeses, entre los más grandes de Europa, incluyen APG y PGGM, y son inversionistas institucionales clave en el AEX."},
+
+    {p:"¿Qué representa exactamente el AEX?",
+     o:["El índice insignia de Euronext Amsterdam que agrupa las 25 empresas más grandes y líquidas","El índice de mid-caps","El índice de small-caps","El índice de volatilidad"],c:0,
+     e:"El AEX (Amsterdam Exchange Index) es el índice insignia de Euronext Amsterdam: agrupa las 25 empresas más grandes y líquidas, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el AMX neerlandés?",
+     o:["El índice de mid-caps (Amsterdam Midkap Index)","El índice insignia","El índice de small-caps","El índice de volatilidad"],c:0,
+     e:"El AMX (Amsterdam Midkap Index) es el índice de mid-caps de Euronext Amsterdam, que agrupa empresas de capitalización media."},
+
+    {p:"¿Qué es el AScX neerlandés?",
+     o:["El índice de small-caps (Amsterdam Small Cap Index)","El índice insignia","El índice de mid-caps","El índice de volatilidad"],c:0,
+     e:"El AScX (Amsterdam Small Cap Index) es el índice de small-caps de Euronext Amsterdam, que agrupa empresas de pequeña capitalización."},
+
+    {p:"¿Qué son los DSL (Dutch State Loans) neerlandeses?",
+     o:["Títulos de deuda pública soberana holandesa, a tasa fija y de alto grado crediticio","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los DSL (Dutch State Loans) son los títulos de deuda pública soberana holandesa, a tasa fija y de alto grado crediticio. La deuda soberana holandesa goza de calificación AAA."},
+
+    {p:"¿Qué tipo de ETFs son especialmente relevantes en Euronext Amsterdam?",
+     o:["ETFs de renta variable, renta fija y commodities, con un hub masivo de ETFs en Europa","ETFs de divisas solamente","ETFs de criptomonedas","ETFs de derivados"],c:0,
+     e:"Euronext Amsterdam es un hub masivo de ETFs en Europa: se negocian ETFs de renta variable, renta fija y commodities, con emisores como Amundi, Lyxor, iShares, etc."},
+
+    {p:"¿Qué son los Turbos en Países Bajos?",
+     o:["Productos estructurados apalancados emitidos por bancos, muy populares entre el retail","Futuros sobre el AEX","Swaps de tasas","Opciones sobre acciones"],c:0,
+     e:"Los Turbos son productos estructurados apalancados emitidos por bancos, muy populares entre los inversores holandeses. Permiten exposición apalancada a un activo subyacente."},
+
+    {p:"¿Qué son los Warrants en Países Bajos?",
+     o:["Títulos opcionales emitidos por bancos sobre acciones o índices","Futuros sobre el AEX","Bonos corporativos","Acciones preferenciales"],c:0,
+     e:"Los Warrants en Países Bajos son títulos opcionales emitidos por bancos sobre acciones o índices, que otorgan el derecho (no la obligación) de comprar o vender el activo subyacente."},
+
+    {p:"¿Qué son los Certificados estructurados en Países Bajos?",
+     o:["Productos de inversión emitidos por bancos con retorno ligado a un activo subyacente","Bonos de deuda pública","Acciones preferenciales","Futuros sobre el AEX"],c:0,
+     e:"Los Certificados estructurados son productos de inversión emitidos por bancos con retorno ligado a un activo subyacente (índices, acciones, divisas, etc.). Son muy populares en la cultura inversora holandesa."},
+
+    {p:"¿Qué es un Repo tripartito en Países Bajos?",
+     o:["Una operación de venta con pacto de recompra con un agente tripartito que gestiona las garantías","Un futuro sobre el AEX","Un swap de tasas","Una opción sobre acciones"],c:0,
+     e:"Un Repo tripartito es una operación de venta con pacto de recompra en la que un agente tripartito gestiona las garantías. Es común en el mercado holandés sobre deuda soberana."},
+
+    {p:"¿Qué es un CDS (Credit Default Swap) en el contexto holandés?",
+     o:["Un seguro contra el impago de un emisor (soberano o corporativo)","Un futuro sobre el AEX","Un swap de tasas","Una opción sobre acciones"],c:0,
+     e:"Un CDS (Credit Default Swap) es un seguro contra el impago de un emisor (soberano o corporativo). En Países Bajos se negocian CDS sobre corporativos holandeses e índices iTraxx."}
+  ]
+},
+
+/* ================= CHINA (SSE) ================= */
+{
+  pais:"China (SSE)", bandera:"🇨🇳",
+  preguntas:[
+    {p:"¿Qué tablero de la Bolsa de Shanghái (SSE) alberga empresas de alta tecnología?",
+     o:["STAR Market","ChiNext (Shenzhen)","Catalist (Singapur)","AIM (Reino Unido)"],c:0,
+     e:"El STAR Market es el tablero de alta tecnología de la SSE; ChiNext es el tablero equivalente de la Bolsa de Shenzhen."},
+
+    {p:"¿Qué regla particular aplica China a la negociación de acciones?",
+     o:["T+0 obligatorio","T+1: las acciones compradas hoy solo pueden venderse al día hábil siguiente","T+2","No existe restricción"],c:1,
+     e:"China aplica la regla T+1 para la negociación de acciones (aunque la liquidación monetaria opera en T+0/T+1), una particularidad única del mercado chino."},
+
+    {p:"¿Quién actúa como Contraparte Central única y Depósito Central de Valores en China?",
+     o:["ChinaClear","La CSRC (regulador)","CFFEX (mercado de futuros financieros)","Cninfo (portal de divulgación)"],c:0,
+     e:"China Securities Depository and Clearing Corporation (ChinaClear) es la CCP única y el Depósito Central de Valores, encargada del registro, custodia y liquidación de todas las transacciones."},
+
+    {p:"¿Cuál es el índice insignia que consolida las 300 mayores acciones A de Shanghái y Shenzhen?",
+     o:["SSE Composite (índice general de Shanghái)","CSI 300 (índice insignia)","SSE 50 (50 mayores de Shanghái)","STAR 50 (50 mayores del STAR Market)"],c:1,
+     e:"El CSI 300 consolida las 300 mayores acciones A de ambos mercados; el SSE Composite es el índice general de Shanghái y el SSE 50 agrupa las 50 mayores."},
+
+    {p:"¿Qué programas permiten a los inversionistas extranjeros acceder a las acciones A chinas?",
+     o:["QFII/RQFII y Stock Connect Shanghái/Shenzhen-Hong Kong","SIC y PEA (México/Francia)","NISA e ISA (Japón/Reino Unido)","MILA y nuam (Latinoamérica)"],c:0,
+     e:"Los inversores extranjeros acceden mediante los programas QFII/RQFII (Qualified Foreign Institutional Investor / RMB Qualified Foreign Institutional Investor) y las conexiones Stock Connect Shanghái/Shenzhen-Hong Kong."},
+
+    {p:"¿Qué sitio web es el asignado oficialmente por la CSRC para la divulgación legal de información de las emisoras chinas?",
+     o:["Cninfo","TDnet (Japón)","EDINET (Japón)","EMISNET (México)"],c:0,
+     e:"Cninfo es el sitio web oficial asignado por la CSRC (China Securities Regulatory Commission) para la divulgación legal de estados financieros e información de las emisoras listadas."},
+
+    {p:"¿Qué particularidad tiene la Escala Nacional de calificación china?",
+     o:["Tiene una concentración muy alta en las categorías superiores (AAA)","No existe escala nacional","Usa el sufijo .mx","Solo admite escala global"],c:0,
+     e:"La escala local china concentra una proporción muy alta de emisores en las categorías superiores; el AAA se asigna a la mayoría de las empresas estatales (SOEs)."},
+
+    {p:"¿Dónde se negocian los futuros sobre índices accionarios en China?",
+     o:["CFFEX (China Financial Futures Exchange)","SSE (Shanghái)","ChinaClear (depósito)","CFETS (mercado interbancario)"],c:0,
+     e:"CFFEX (China Financial Futures Exchange) negocia los futuros sobre CSI 300, SSE 50, CSI 500 y CSI 1000, además de futuros sobre bonos del gobierno."},
+
+    {p:"¿Cuáles son las calificadoras locales dominantes en China?",
+     o:["Lianhe, Chengxin, Dagong, Shanghai Brilliance y Golden Credit","RAM y MARC (Malasia)","CRISIL e ICRA (India)","JCR y R&I (Japón)"],c:0,
+     e:"El mercado está dominado por China Lianhe Credit Rating, Chengxin, Dagong Global, Shanghai Brilliance y Golden Credit, además de joint ventures como Fitch Bohua y S&P Global China Ratings."},
+
+    {p:"¿Qué tipo de repos son de colosal tamaño en China?",
+     o:["Pledging Repo y Outright Repo","Caución bursátil (Argentina)","SBBA (Malasia)","Gensaki (Japón)"],c:0,
+     e:"El mercado repo chino incluye Pledging Repo y Outright Repo sobre bonos estatales, tanto en el mercado interbancario como en bolsa."},
+
+    {p:"¿Qué representa exactamente el SSE Composite Index?",
+     o:["El índice general de la Bolsa de Shanghái, que abarca el conjunto de las acciones cotizadas en la SSE","El índice insignia de 300 acciones","El índice de 50 acciones","El índice del STAR Market"],c:0,
+     e:"El SSE Composite Index es el índice general de la Bolsa de Shanghái: abarca el conjunto de las acciones cotizadas en la SSE, ponderado por capitalización."},
+
+    {p:"¿Qué es el CSI 300?",
+     o:["El índice insignia que consolida las 300 mayores acciones A de Shanghái y Shenzhen","El índice general de Shanghái","El índice de 50 acciones de Shanghái","El índice del STAR Market"],c:0,
+     e:"El CSI 300 es el índice insignia del mercado accionario chino: consolida las 300 mayores acciones A de Shanghái y Shenzhen, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el SSE 50?",
+     o:["El índice que agrupa las 50 mayores acciones de la Bolsa de Shanghái","El índice general de Shanghái","El índice insignia de 300 acciones","El índice del STAR Market"],c:0,
+     e:"El SSE 50 es el índice que agrupa las 50 mayores acciones de la Bolsa de Shanghái, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el STAR 50?",
+     o:["El índice que agrupa las 50 mayores empresas del STAR Market","El índice general de Shanghái","El índice insignia de 300 acciones","El índice de 50 acciones de Shanghái"],c:0,
+     e:"El STAR 50 es el índice que agrupa las 50 mayores empresas del STAR Market, el tablero de alta tecnología de la Bolsa de Shanghái."},
+
+    {p:"¿Qué es el Shenzhen Component Index?",
+     o:["El índice de referencia de la Bolsa de Shenzhen, que agrupa las principales acciones de ese mercado","El índice general de Shanghái","El índice insignia de 300 acciones","El índice del STAR Market"],c:0,
+     e:"El Shenzhen Component Index es el índice de referencia de la Bolsa de Shenzhen: agrupa las principales acciones cotizadas en ese mercado, ponderado por capitalización."},
+
+    {p:"¿Qué son las Acciones Clase A en China?",
+     o:["Acciones denominadas en RMB (yuan), cotizadas en Shanghái y Shenzhen, accesibles a locales y extranjeros vía Stock Connect","Acciones denominadas en USD","Acciones denominadas en HKD","Acciones preferenciales"],c:0,
+     e:"Las Acciones Clase A son acciones denominadas en RMB (yuan), cotizadas en Shanghái y Shenzhen. Son accesibles a inversores locales y extranjeros mediante Stock Connect."},
+
+    {p:"¿Qué son las Acciones Clase B en China?",
+     o:["Acciones denominadas en USD (Shanghái) o HKD (Shenzhen), hoy en desuso","Acciones denominadas en RMB","Acciones preferenciales","Acciones del STAR Market"],c:0,
+     e:"Las Acciones Clase B son acciones denominadas en USD (en Shanghái) o HKD (en Shenzhen), hoy en desuso tras la apertura de los programas Stock Connect."},
+
+    {p:"¿Qué es el STAR Market chino?",
+     o:["El tablero de alta tecnología de la Bolsa de Shanghái, para empresas de innovación","El tablero de Shenzhen","El mercado de futuros financieros","El mercado de deuda pública"],c:0,
+     e:"El STAR Market es el tablero de alta tecnología de la Bolsa de Shanghái, dirigido a empresas de innovación y alto crecimiento. Su equivalente en Shenzhen es ChiNext."},
+
+    {p:"¿Qué es ChiNext en China?",
+     o:["El tablero de startups tecnológicas de la Bolsa de Shenzhen","El tablero de alta tecnología de Shanghái","El mercado de futuros financieros","El mercado de deuda pública"],c:0,
+     e:"ChiNext es el tablero de startups tecnológicas de la Bolsa de Shenzhen, similar al STAR Market de Shanghái."},
+
+    {p:"¿Qué son los C-REITs chinos?",
+     o:["REITs de infraestructura pública, que cotizan en bolsa y permiten invertir en proyectos de infraestructura","Acciones preferenciales","Bonos corporativos","Warrants"],c:0,
+     e:"Los C-REITs son REITs de infraestructura pública que cotizan en bolsa y permiten a los inversionistas acceder a proyectos de infraestructura, un vehículo agrupado en crecimiento en China."}
+  ]
+},
+
+/* ================= JAPÓN (TSE) ================= */
+{
+  pais:"Japón (TSE)", bandera:"🇯🇵",
+  preguntas:[
+    {p:"¿Qué grupo surge de la fusión de la Bolsa de Tokio (TSE) y la Bolsa de Osaka (OSE)?",
+     o:["JPX (Japan Exchange Group)","JSCC (cámara de compensación)","JASDEC (depósito central)","La FSA (regulador)"],c:0,
+     e:"Japan Exchange Group (JPX) se creó tras la fusión de la TSE y la OSE, y es la mayor bolsa de Asia por capitalización de mercado accionario."},
+
+    {p:"¿Cuál es el motor transaccional de la TSE para renta variable?",
+     o:["arrowhead","J-GATE (derivados)","Optiq (Euronext)","T7 (Deutsche Börse)"],c:0,
+     e:"arrowhead es el motor transaccional de ultra alta velocidad de la TSE, desarrollado por Fujitsu; J-GATE es la plataforma de derivados de la Bolsa de Osaka."},
+
+    {p:"¿Cuál es el índice ponderado por capitalización ajustada por flotante que abarca el mercado Prime japonés?",
+     o:["Nikkei 225 (promedio por precio)","TOPIX (ponderado por capitalización)","JPX-Nikkei Index 400","Nikkei 225 VI (volatilidad)"],c:1,
+     e:"El TOPIX es el índice ponderado por capitalización ajustada por flotante; el Nikkei 225 es un promedio ponderado por precio de 225 empresas líderes."},
+
+    {p:"¿Qué estructura de mercado tiene hoy la TSE?",
+     o:["Prime Market, Standard Market y Growth Market","Main Market, AIM y Premium","STAR Market y ChiNext","Mainboard y Catalist"],c:0,
+     e:"La TSE se reestructuró en Prime Market (grandes corporaciones globales), Standard Market y Growth Market (empresas emergentes)."},
+
+    {p:"¿Qué sistema es el canal oficial obligatorio de la TSE para la transmisión de hechos relevantes y estados financieros?",
+     o:["TDnet (Timely Disclosure Network)","EDINET (sistema de la FSA)","RNS (Londres)","Cninfo (China)"],c:0,
+     e:"TDnet (Timely Disclosure Network) es el sistema oficial de la TSE; EDINET es el sistema de la FSA para reportes financieros, equivalente al EDGAR de la SEC."},
+
+    {p:"¿Cuáles son las principales calificadoras domésticas japonesas autorizadas por la FSA?",
+     o:["JCR (Japan Credit Rating Agency) y R&I (Rating and Investment Information)","CRISIL e ICRA (India)","Feller Rate e ICR (Chile)","RAM y MARC (Malasia)"],c:0,
+     e:"Japan Credit Rating Agency (JCR) y Rating and Investment Information (R&I) son las agencias domésticas autorizadas por la FSA, junto con las sucursales de S&P, Fitch y Moody's."},
+
+    {p:"¿Qué son los J-REITs?",
+     o:["Fondos de inversión inmobiliaria japoneses, el mercado de REITs más grande y líquido de Asia","Bonos del gobierno japonés (JGBs)","ETFs apalancados sobre el Nikkei","Warrants cubiertos"],c:0,
+     e:"Los J-REITs (Japanese Real Estate Investment Trusts) conforman el mercado de REITs más grande y líquido de Asia."},
+
+    {p:"¿Dónde se negocian los futuros sobre el Nikkei 225 y sobre el JGB a 10 años?",
+     o:["En la Bolsa de Osaka (OSE - JPX)","En la TSE","En JASDEC (depósito)","En JSCC (cámara de compensación)"],c:0,
+     e:"La negociación de derivados se concentra en la Bolsa de Osaka (OSE), parte de JPX, y en la Tokyo Financial Exchange (TFX)."},
+
+    {p:"¿Qué cuentas de ahorro exentas de impuestos son populares entre los inversores retail japoneses?",
+     o:["NISA (Nippon Individual Savings Account)","ISA (Reino Unido)","PEA (Francia)","401k (EE.UU.)"],c:0,
+     e:"Las cuentas NISA (Nippon Individual Savings Account) son históricamente el vehículo favorito del inversor retail japonés."},
+
+    {p:"¿Qué fondo de pensión, el más grande del mundo, es un inversionista institucional clave en Japón?",
+     o:["GPIF (Government Pension Investment Fund)","Temasek (Singapur)","EPF (Malasia)","Previ (Brasil)"],c:0,
+     e:"El GPIF (Government Pension Investment Fund) es el fondo de pensión más grande del mundo y un actor clave en el mercado japonés, junto con el Banco de Japón, que compra ETFs."},
+
+    {p:"¿Cómo se llama el mercado de repos sobre JGBs para la gestión de liquidez bancaria en Japón?",
+     o:["Gensaki","TREPS (India)","SBBA (Malasia)","Pledging Repo (China)"],c:0,
+     e:"El Gensaki es el mercado de operaciones de compra/venta con compromiso de recompra sobre JGBs (repos) utilizado para la gestión de liquidez bancaria."},
+
+    {p:"¿Qué representa exactamente el Nikkei 225?",
+     o:["El índice de promedio ponderado por precio de las 225 empresas líderes cotizadas en la TSE","El índice ponderado por capitalización","El índice de 400 empresas","El índice de volatilidad"],c:0,
+     e:"El Nikkei 225 es un índice de promedio ponderado por precio: agrupa 225 empresas líderes cotizadas en la TSE. Es el índice más seguido del mercado japonés, junto con el TOPIX."},
+
+    {p:"¿Qué es el TOPIX japonés?",
+     o:["El índice ponderado por capitalización ajustada por flotante que abarca el mercado Prime","El índice de promedio por precio","El índice de 400 empresas","El índice de volatilidad"],c:0,
+     e:"El TOPIX (Tokyo Stock Price Index) es el índice ponderado por capitalización ajustada por flotante que abarca el mercado Prime de la TSE."},
+
+    {p:"¿Qué es el JPX-Nikkei Index 400?",
+     o:["El índice que agrupa 400 empresas seleccionadas por criterios de eficiencia y gobierno corporativo","El índice de promedio por precio","El índice ponderado por capitalización","El índice de volatilidad"],c:0,
+     e:"El JPX-Nikkei Index 400 agrupa 400 empresas seleccionadas por criterios de eficiencia de capital y gobierno corporativo, impulsado por las reformas de la TSE."},
+
+    {p:"¿Qué es el Nikkei 225 VI?",
+     o:["El índice de volatilidad implícita del Nikkei 225","El índice amplio del mercado","El índice de 400 empresas","El índice de deuda pública"],c:0,
+     e:"El Nikkei 225 VI es el índice de volatilidad implícita del Nikkei 225, derivado de las opciones sobre el índice."},
+
+    {p:"¿Qué son los JGBs japoneses?",
+     o:["Los Bonos del Gobierno de Japón (Japanese Government Bonds)","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los JGBs (Japanese Government Bonds) son los Bonos del Gobierno de Japón, la referencia de la renta fija soberana japonesa. Incluyen plazos corto, mediano, largo y super-largo (hasta 40 años)."},
+
+    {p:"¿Qué son los Samurai Bonds japoneses?",
+     o:["Bonos en yenes emitidos por extranjeros en Japón","Bonos de deuda pública japonesa","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Samurai Bonds son bonos en yenes emitidos por extranjeros en Japón. Son una de las particularidades del mercado de renta fija japonés."},
+
+    {p:"¿Qué es el Prime Market japonés?",
+     o:["El segmento de la TSE para grandes corporaciones globales","El segmento para empresas emergentes","El segmento para empresas de capitalización media","El segmento para Pymes"],c:0,
+     e:"El Prime Market es el segmento de la TSE para grandes corporaciones globales, con los más altos estándares de liquidez y gobierno corporativo."},
+
+    {p:"¿Qué es el Standard Market japonés?",
+     o:["El segmento de la TSE para empresas de capitalización media","El segmento para grandes corporaciones","El segmento para empresas emergentes","El segmento para Pymes"],c:0,
+     e:"El Standard Market es el segmento de la TSE para empresas de capitalización media, con estándares de liquidez y gobierno corporativo intermedios."},
+
+    {p:"¿Qué es el Growth Market japonés?",
+     o:["El segmento de la TSE para empresas emergentes de alto crecimiento","El segmento para grandes corporaciones","El segmento para empresas de capitalización media","El segmento para Pymes"],c:0,
+     e:"El Growth Market es el segmento de la TSE para empresas emergentes de alto crecimiento, con requisitos de cotización más flexibles."},
+
+    {p:"¿Qué son las cuentas NISA japonesas?",
+     o:["Cuentas de ahorro exentas de impuestos para inversores retail","Cuentas de pensiones","Cuentas de corretaje institucional","Cuentas de derivados"],c:0,
+     e:"Las NISA (Nippon Individual Savings Account) son cuentas de ahorro exentas de impuestos para inversores retail japoneses, históricamente el vehículo favorito del retail."}
+  ]
+},
+
+/* ================= SINGAPUR (SGX) ================= */
+{
+  pais:"Singapur (SGX)", bandera:"🇸🇬",
+  preguntas:[
+    {p:"¿Cuál es el regulador integrado de servicios financieros de Singapur?",
+     o:["MAS (Monetary Authority of Singapore)","FCA (Reino Unido)","Securities Commission (Malasia)","SEBI (India)"],c:0,
+     e:"La MAS (Monetary Authority of Singapore) actúa como banco central y regulador integrado de servicios financieros de Singapur."},
+
+    {p:"¿Cuál es el índice insignia de la SGX?",
+     o:["Straits Times Index (STI)","FTSE China A50 (futuro offshore)","iEdge S-REIT Index","Nikkei 225 (Japón)"],c:0,
+     e:"El STI agrupa las 30 empresas más representativas y líquidas de la SGX."},
+
+    {p:"¿Qué entidad actúa como Depósito Central de Valores y Contraparte Central en el mercado accionario de Singapur?",
+     o:["CDP (The Central Depository)","ChinaClear (China)","JASDEC (Japón)","Euroclear (Europa)"],c:0,
+     e:"The Central Depository (Pte) Limited (CDP) actúa como CSD y CCP para el mercado accionario, realizando la liquidación en ciclo T+2."},
+
+    {p:"¿Qué tipo de vehículo es especialmente relevante en Singapur, siendo el centro neurálgico de Asia fuera de Japón?",
+     o:["S-REITs","SOCIMIs (España)","FIIs (Brasil)","InvITs (India)"],c:0,
+     e:"Singapur es el centro neurálgico indiscutible de los REITs en Asia fuera de Japón, con los S-REITs como vehículo estrella."},
+
+    {p:"¿Qué contrato de futuros de SGX es el más importante de China en el mercado offshore?",
+     o:["SGX FTSE China A50 Futures","SGX Nifty 50 Futures (India)","SGX Nikkei 225 Futures (Japón)","SGX MSCI Taiwan Futures"],c:0,
+     e:"El SGX FTSE China A50 Futures es el contrato offshore de China más importante, negociado en la SGX Derivatives."},
+
+    {p:"¿En qué commodity es líder mundial la SGX?",
+     o:["Mineral de hierro (Iron Ore Futures)","Petróleo Brent (ICE)","Aceite de palma (Malasia)","Trigo molinero (Euronext)"],c:0,
+     e:"SGX es líder mundial en futuros de mineral de hierro, uno de sus contratos más exitosos internacionalmente."},
+
+    {p:"¿Qué sistema es el canal electrónico oficial de difusión de anuncios corporativos en Singapur?",
+     o:["SGXNet","RNS (Londres)","TDnet (Japón)","Bursa LINK (Malasia)"],c:0,
+     e:"SGXNet es el sistema electrónico oficial obligatorio para la difusión de anuncios corporativos, hechos relevantes y estados financieros de las empresas listadas."},
+
+    {p:"¿Cómo se llama el mercado patrocinado de la SGX para empresas en crecimiento?",
+     o:["Catalist","AIM (Reino Unido)","ACE Market (Malasia)","STAR Market (China)"],c:0,
+     e:"Catalist es el mercado patrocinado para empresas en crecimiento, frente al Mainboard de la SGX."},
+
+    {p:"¿Qué fondos soberanos tienen sede en Singapur y son inversionistas institucionales clave?",
+     o:["GIC y Temasek Holdings","GPIF y NPS (Japón)","EPF y PNB (Malasia)","APG y PGGM (Países Bajos)"],c:0,
+     e:"GIC y Temasek Holdings son los fondos soberanos singapurenses, actores institucionales de primer orden en la SGX."},
+
+    {p:"¿Qué divisas y futuros de tipo de cambio se negocian en la SGX?",
+     o:["USD/CNH e INR/USD","USD/CLP y USD/COP","EUR/GBP y EUR/JPY","USD/ARS y USD/BRL"],c:0,
+     e:"La SGX negocia futuros sobre tasa de cambio como el USD/CNH y el INR/USD, además de forwards en el mercado interbancario OTC."},
+
+    {p:"¿Qué representa exactamente el Straits Times Index (STI)?",
+     o:["El índice insignia que agrupa las 30 empresas más representativas y líquidas de la SGX","El índice amplio del mercado","El índice de S-REITs","El índice de volatilidad"],c:0,
+     e:"El STI (Straits Times Index) es el índice insignia de la SGX: agrupa las 30 empresas más representativas y líquidas, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el iEdge SGX APAC Dividend Leaders Index?",
+     o:["El índice que agrupa empresas de Asia-Pacífico con altos dividendos","El índice insignia","El índice de S-REITs","El índice de volatilidad"],c:0,
+     e:"El iEdge SGX APAC Dividend Leaders Index agrupa empresas de Asia-Pacífico con altos dividendos, ofreciendo exposición a rentas periódicas."},
+
+    {p:"¿Qué es el iEdge S-REIT Index?",
+     o:["El índice que agrupa los S-REITs (Singapore REITs)","El índice insignia","El índice amplio","El índice de volatilidad"],c:0,
+     e:"El iEdge S-REIT Index agrupa los S-REITs (Singapore REITs), el vehículo inmobiliario cotizado de Singapur, muy popular entre inversores de rentas."},
+
+    {p:"¿Qué son los SGS singapurenses?",
+     o:["Los Singapore Government Securities (títulos de deuda pública de Singapur)","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los SGS (Singapore Government Securities) son los títulos de deuda pública de Singapur, la referencia de la renta fija soberana."},
+
+    {p:"¿Qué son las MAS Bills singapurenses?",
+     o:["Letras del banco central (MAS) a corto plazo","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Las MAS Bills son letras del banco central (Monetary Authority of Singapore) a corto plazo, parte de la renta fija de Singapur."},
+
+    {p:"¿Qué es el Mainboard de la SGX?",
+     o:["El mercado principal de la SGX para empresas consolidadas","El mercado patrocinado para empresas en crecimiento","El mercado de derivados","El mercado de deuda pública"],c:0,
+     e:"El Mainboard es el mercado principal de la SGX para empresas consolidadas, con requisitos de cotización más exigentes que Catalist."},
+
+    {p:"¿Qué es el Catalist de la SGX?",
+     o:["El mercado patrocinado para empresas en crecimiento","El mercado principal","El mercado de derivados","El mercado de deuda pública"],c:0,
+     e:"El Catalist es el mercado patrocinado de la SGX para empresas en crecimiento, con requisitos de cotización más flexibles que el Mainboard."},
+
+    {p:"¿Qué es el CDP de Singapur?",
+     o:["The Central Depository (Pte) Limited, el depósito central de valores y CCP del mercado accionario","El regulador del mercado","El banco central","El fondo soberano"],c:0,
+     e:"El CDP (The Central Depository) es el depósito central de valores y la contraparte central (CCP) del mercado accionario de Singapur, encargado de la liquidación en T+2."},
+
+    {p:"¿Qué es el REACH de la SGX?",
+     o:["El motor de negociación de acciones de alta velocidad de SGX","El sistema de difusión de datos","El sistema de divulgación corporativa","El depósito central de valores"],c:0,
+     e:"El REACH es el motor de negociación de acciones de alta velocidad de la SGX, mientras que el Titan es la plataforma transaccional para derivados."},
+
+    {p:"¿Qué es el Titan de la SGX?",
+     o:["La plataforma transaccional para derivados de SGX","El motor de negociación de acciones","El sistema de difusión de datos","El sistema de divulgación corporativa"],c:0,
+     e:"El Titan es la plataforma transaccional para derivados de la SGX, mientras que el REACH es el motor de negociación de acciones."}
+  ]
+},
+
+/* ================= MALASIA ================= */
+{
+  pais:"Malasia (Bursa Malaysia)", bandera:"🇲🇾",
+  preguntas:[
+    {p:"¿Cuál es la institución de mercado bursátil de Malasia?",
+     o:["Bursa Malaysia Berhad","SGX (Singapur)","SET (Tailandia)","IDX (Indonesia)"],c:0,
+     e:"Bursa Malaysia Berhad es la institución de mercado de Malasia, uno de los centros financieros más destacados del Sudeste Asiático."},
+
+    {p:"¿En qué industrias es líder mundial Malasia a través de Bursa Malaysia?",
+     o:["Finanzas islámicas (Sukuk) y formación de precios del aceite de palma","Semiconductores y mineral de hierro","Petróleo Brent y metales","Trigo y soya"],c:0,
+     e:"Bursa Malaysia es líder global en Finanzas Islámicas (productos Shariah-compliant) y es el centro mundial de formación de precios para la industria del aceite de palma."},
+
+    {p:"¿Cuál es el índice insignia de Bursa Malaysia?",
+     o:["FBM KLCI (índice insignia)","FBM EMAS (índice amplio)","FBM Hijrah Shariah (índice islámico)","STI (Singapur)"],c:0,
+     e:"El FTSE Bursa Malaysia KLCI (FBM KLCI) comprende las 30 mayores empresas del Main Market y es el índice insignia."},
+
+    {p:"¿Cuál es el contrato de futuros de referencia mundial que se negocia en Bursa Malaysia Derivatives?",
+     o:["FCPO (Crude Palm Oil Futures)","FKLI (futuros del KLCI)","Futuros de MGS","Futuros de caucho"],c:0,
+     e:"El FCPO (Crude Palm Oil Futures) es el contrato de futuro de aceite de palma crudo de referencia mundial para la formación global de precios."},
+
+    {p:"¿Cuáles son las calificadoras locales autorizadas en Malasia?",
+     o:["RAM Rating Services y MARC Rating","JCR y R&I (Japón)","CRISIL e ICRA (India)","Feller Rate e ICR (Chile)"],c:0,
+     e:"RAM Rating Services Berhad y MARC Rating Berhad son las calificadoras locales autorizadas por la Securities Commission Malaysia."},
+
+    {p:"¿Qué reguladores supervisan el mercado malasio?",
+     o:["Securities Commission Malaysia (SC) y Bank Negara Malaysia (BNM)","MAS y SGX (Singapur)","SEBI y RBI (India)","FSA y SESC (Japón)"],c:0,
+     e:"La Securities Commission Malaysia (SC) y Bank Negara Malaysia (BNM) son los entes reguladores del mercado de valores y del sistema financiero."},
+
+    {p:"¿Qué sistema es el canal oficial de comunicación electrónica de emisores en Malasia?",
+     o:["Bursa LINK","SGXNet (Singapur)","Cninfo (China)","EMISNET (México)"],c:0,
+     e:"Bursa LINK es el sistema oficial de comunicación e información electrónica de emisores para reportar estados financieros y hechos relevantes a la SC y a la bolsa."},
+
+    {p:"¿Qué es el SBBA en Malasia?",
+     o:["El repo islámico (Sell and Buy Back Agreement)","Un tipo de Sukuk","Un índice bursátil","Un futuro sobre el KLCI"],c:0,
+     e:"El SBBA (Sell and Buy Back Agreement) es el repo islámico sobre MGS/Sukuk, utilizado para la gestión de liquidez."},
+
+    {p:"¿Qué es el FBM Hijrah Shariah Index?",
+     o:["Un índice que agrupa acciones que cumplen la Shariah","Un índice de volatilidad","Un índice de bonos corporativos","Un índice de derivados"],c:0,
+     e:"El FBM Hijrah Shariah Index es el índice islámico que agrupa acciones que cumplen con los principios de la Shariah."},
+
+    {p:"¿Qué fondos estatales gigantes son inversionistas institucionales clave en Malasia?",
+     o:["EPF, PNB y Tabung Haji","GIC y Temasek (Singapur)","GPIF y NPS (Japón)","APG y PGGM (Países Bajos)"],c:0,
+     e:"EPF (Employees Provident Fund), PNB (Permodalan Nasional Berhad) y Tabung Haji son los fondos estatales y de pensión gigantes que dominan la inversión institucional en Malasia."},
+
+    {p:"¿Qué representa exactamente el FBM KLCI?",
+     o:["El índice insignia que agrupa las 30 mayores empresas del Main Market de Bursa Malaysia","El índice amplio del mercado","El índice islámico","El índice de volatilidad"],c:0,
+     e:"El FBM KLCI (FTSE Bursa Malaysia KLCI) es el índice insignia de Malasia: agrupa las 30 mayores empresas del Main Market, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el FBM EMAS?",
+     o:["El índice amplio del mercado accionario malasio","El índice insignia","El índice islámico","El índice de volatilidad"],c:0,
+     e:"El FBM EMAS es el índice amplio del mercado accionario malasio, que abarca un universo mayor de empresas que el FBM KLCI."},
+
+    {p:"¿Qué es el FBM Hijrah Shariah Index?",
+     o:["El índice que agrupa acciones que cumplen los principios de la Shariah","El índice amplio","El índice insignia","El índice de volatilidad"],c:0,
+     e:"El FBM Hijrah Shariah Index es el índice islámico de Bursa Malaysia: agrupa acciones que cumplen los principios de la Shariah, en línea con el liderazgo de Malasia en finanzas islámicas."},
+
+    {p:"¿Qué son los MGS malasios?",
+     o:["Malaysian Government Securities, títulos de deuda pública convencional","Bonos islámicos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los MGS (Malaysian Government Securities) son títulos de deuda pública convencional de Malasia, la referencia de la renta fija soberana."},
+
+    {p:"¿Qué son los MGII malasios?",
+     o:["Malaysian Government Investment Issues, bonos islámicos (Sukuk) del gobierno","Bonos convencionales","Acciones preferenciales","Warrants"],c:0,
+     e:"Los MGII (Malaysian Government Investment Issues) son bonos islámicos (Sukuk) del gobierno de Malasia, parte de la deuda pública Shariah-compliant."},
+
+    {p:"¿Qué son los Sukuk en Malasia?",
+     o:["Bonos islámicos que cumplen los principios de la Shariah","Bonos convencionales","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Sukuk son bonos islámicos que cumplen los principios de la Shariah. Malasia es el mayor mercado del mundo de Sukuk corporativos."},
+
+    {p:"¿Qué es el Main Market de Bursa Malaysia?",
+     o:["El mercado principal para empresas consolidadas","El mercado para empresas en crecimiento","El mercado para Pymes","El mercado de derivados"],c:0,
+     e:"El Main Market es el mercado principal de Bursa Malaysia para empresas consolidadas, con requisitos de cotización más exigentes."},
+
+    {p:"¿Qué es el ACE Market de Bursa Malaysia?",
+     o:["El mercado para empresas en crecimiento (ACE = Access, Certainty, Efficiency)","El mercado principal","El mercado para Pymes","El mercado de derivados"],c:0,
+     e:"El ACE Market (Access, Certainty, Efficiency) es el mercado de Bursa Malaysia para empresas en crecimiento, con requisitos de cotización más flexibles que el Main Market."},
+
+    {p:"¿Qué es el LEAP Market de Bursa Malaysia?",
+     o:["El mercado para Pymes (Leading Entrepreneur Accelerator Platform)","El mercado principal","El mercado para empresas en crecimiento","El mercado de derivados"],c:0,
+     e:"El LEAP Market (Leading Entrepreneur Accelerator Platform) es el mercado de Bursa Malaysia para Pymes, con requisitos de cotización aún más flexibles que el ACE Market."},
+
+    {p:"¿Qué son los REITs islámicos en Malasia?",
+     o:["REITs que cumplen los principios de la Shariah y son muy populares en el mercado malasio","Bonos islámicos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los REITs islámicos son REITs que cumplen los principios de la Shariah, muy populares en Malasia junto con los REITs convencionales, y forman parte de los vehículos agrupados del mercado."}
+  ]
+},
+
+/* ================= INDIA (NSE / BSE) ================= */
+{
+  pais:"India (NSE / BSE)", bandera:"🇮🇳",
+  preguntas:[
+    {p:"¿Cuál es la bolsa más antigua de Asia?",
+     o:["BSE Limited (fundada en 1875)","NSE (National Stock Exchange)","TSE (Tokio)","SSE (Shanghái)"],c:0,
+     e:"La BSE Limited, fundada en 1875, es la bolsa más antigua de Asia; la NSE es, en cambio, la bolsa más grande del mundo por volumen de derivados."},
+
+    {p:"¿Qué bolsa india es la más grande del mundo por volumen de contratos de derivados?",
+     o:["NSE (National Stock Exchange of India)","BSE (Bombay Stock Exchange)","MCX (Multi Commodity Exchange)","GIFT City"],c:0,
+     e:"La NSE de India es la bolsa de derivados más grande del mundo por número de contratos operados."},
+
+    {p:"¿Cuáles son los motores transaccionales de la NSE y de la BSE, respectivamente?",
+     o:["NEAT y BOLT","SETS y SEAQ (Londres)","Optiq y T7 (Europa)","PUMA y arrowhead (Brasil/Japón)"],c:0,
+     e:"NEAT (National Exchange for Automated Trading) es el motor de la NSE y BOLT (BSE On-Line Trading) el de la BSE."},
+
+    {p:"¿Cuál es el ciclo de liquidación que opera India, siendo pionera global?",
+     o:["T+2","T+1, con T+0 opcional","T+3","T+5"],c:1,
+     e:"India es pionera global al operar en un ciclo de liquidación T+1 e incluso T+0 opcional para acciones."},
+
+    {p:"¿Cuáles son los índices insignia de la NSE y de la BSE, respectivamente?",
+     o:["Nifty 50 y BSE Sensex","BSE Sensex y Nifty 50","Nifty Bank y Nifty IT","India VIX y Nifty Next 50"],c:0,
+     e:"El Nifty 50 es el índice insignia de la NSE (50 empresas blue-chip) y el BSE Sensex el de la BSE (30 empresas)."},
+
+    {p:"¿Qué índice mide la volatilidad implícita del mercado indio?",
+     o:["India VIX","VIMEX (México)","VIBEX (España)","VCAC (Francia)"],c:0,
+     e:"El India VIX es el índice de volatilidad implícita del mercado indio, basado en opciones del Nifty 50."},
+
+    {p:"¿Cuáles son los dos depósitos centrales de valores de India?",
+     o:["NSDL y CDSL","CDP y ChinaClear","JASDEC y JSCC","NSCC e ICCL"],c:0,
+     e:"NSDL (National Securities Depository Limited) y CDSL (Central Depository Services Limited) son los depositarios; NCL e ICCL son las cámaras de compensación (CCP)."},
+
+    {p:"¿Qué calificadora india es afiliada de S&P Global?",
+     o:["CRISIL","ICRA (afiliada de Moody's)","CARE Ratings","India Ratings (afiliada de Fitch)"],c:0,
+     e:"CRISIL es afiliada de S&P Global; ICRA lo es de Moody's e India Ratings and Research de Fitch Ratings."},
+
+    {p:"¿Qué es TREPS en India?",
+     o:["Un repo tripartito operado por CCIL","Un tipo de acción preferencial","Un futuro sobre índices","Un ETF de oro"],c:0,
+     e:"TREPS (Triparty Repo) es operado por CCIL, junto con los repos sobre bonos del gobierno (G-Secs), y es clave para la liquidez del mercado indio."},
+
+    {p:"¿Dónde se operan los NDFs sobre USD/INR y otros instrumentos sintéticos para no residentes?",
+     o:["En GIFT City / NSE IX","En la SGX (Singapur)","En CFFEX (China)","En Eurex (Alemania)"],c:0,
+     e:"En GIFT City / NSE IX se operan NDFs sobre USD/INR y otros derivados e instrumentos sintéticos dirigidos a inversores no residentes."},
+
+    {p:"¿Qué representa exactamente el Nifty 50?",
+     o:["El índice insignia de la NSE que agrupa las 50 empresas blue-chip más grandes de India","El índice de la BSE","El índice de bancos","El índice de tecnología"],c:0,
+     e:"El Nifty 50 es el índice insignia de la NSE: agrupa las 50 empresas blue-chip más grandes de India, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el BSE Sensex?",
+     o:["El índice insignia de la BSE que agrupa 30 empresas","El índice de la NSE","El índice de bancos","El índice de tecnología"],c:0,
+     e:"El BSE Sensex es el índice insignia de la BSE: agrupa 30 empresas blue-chip, ponderado por capitalización ajustada por flotante."},
+
+    {p:"¿Qué es el Nifty Bank?",
+     o:["El índice sectorial que agrupa los principales bancos de India","El índice insignia de la NSE","El índice de tecnología","El índice de infraestructura"],c:0,
+     e:"El Nifty Bank es el índice sectorial que agrupa los principales bancos de India, muy negociado en el mercado de derivados."},
+
+    {p:"¿Qué es el Nifty IT?",
+     o:["El índice sectorial que agrupa las principales empresas de tecnología de información de India","El índice insignia de la NSE","El índice de bancos","El índice de infraestructura"],c:0,
+     e:"El Nifty IT es el índice sectorial que agrupa las principales empresas de tecnología de información de India, uno de los sectores más relevantes del país."},
+
+    {p:"¿Qué es el Nifty Next 50?",
+     o:["El índice que agrupa las siguientes 50 empresas después del Nifty 50","El índice insignia","El índice de bancos","El índice de tecnología"],c:0,
+     e:"El Nifty Next 50 agrupa las siguientes 50 empresas después del Nifty 50, ofreciendo exposición a empresas de gran tamaño que no están en el índice insignia."},
+
+    {p:"¿Qué son los G-Secs indios?",
+     o:["Government Securities, títulos de deuda pública de India","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los G-Secs (Government Securities) son los títulos de deuda pública de India, la referencia de la renta fija soberana."},
+
+    {p:"¿Qué son los T-Bills indios?",
+     o:["Treasury Bills, letras del Tesoro a corto plazo","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los T-Bills (Treasury Bills) son letras del Tesoro a corto plazo emitidas por el Gobierno de India, parte de la renta fija soberana."},
+
+    {p:"¿Qué son los SDLs indios?",
+     o:["State Development Loans, bonos emitidos por los estados indios","Bonos corporativos","Acciones preferenciales","Warrants"],c:0,
+     e:"Los SDLs (State Development Loans) son bonos emitidos por los estados indios, parte de la deuda subsoberana de India."},
+
+    {p:"¿Qué son los Commercial Papers indios?",
+     o:["Instrumentos de financiamiento de corto plazo emitidos por empresas","Bonos de deuda pública","Acciones preferenciales","Warrants"],c:0,
+     e:"Los Commercial Papers son instrumentos de financiamiento de corto plazo emitidos por empresas, parte de la renta fija privada de India."},
+
+    {p:"¿Qué son los InvITs indios?",
+     o:["Infrastructure Investment Trusts, vehículos de inversión en infraestructura","Fondos de pensiones","Bonos corporativos","Warrants"],c:0,
+     e:"Los InvITs (Infrastructure Investment Trusts) son vehículos de inversión en infraestructura, similares a los REITs pero enfocados en proyectos de infraestructura."}
+  ]
+}
+
+];
+
+/* =========================================================
+   LÓGICA DE LA APLICACIÓN
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const LETRAS = ["A","B","C","D","E","F"];
+let pool = [], idx = 0, aciertos = 0, fallos = 0, respondida = false, filtro = "todos";
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function preparar(q){
+  const n = q.o.length;
+  const orden = shuffle([...Array(n).keys()]);
+  return {p:q.p, o:orden.map(i=>q.o[i]), c:orden.indexOf(q.c), e:q.e};
+}
+function construirPool(pais){
+  const out = [];
+  BANCO.forEach(g=>{
+    if(pais !== "todos" && g.pais !== pais) return;
+    g.preguntas.forEach(q=>{
+      const prep = preparar(q);
+      prep.pais = g.pais;
+      prep.bandera = g.bandera;
+      out.push(prep);
+    });
+  });
+  return shuffle(out);
+}
+function pintarInicio(){
+  const grid = $("gridPaises");
+  grid.innerHTML = "";
+  const total = BANCO.reduce((a,g)=>a+g.preguntas.length,0);
+  const todos = document.createElement("button");
+  todos.className = "chip chipTodos";
+  todos.innerHTML = `<span class="chipNombre">🌎 Todos los mercados</span><span class="chipCount">${total} preguntas</span>`;
+  todos.onclick = ()=>{ filtro = "todos"; iniciar(); };
+  grid.appendChild(todos);
+  BANCO.forEach(g=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.innerHTML = `<span class="chipNombre">${g.bandera} ${g.pais}</span><span class="chipCount">${g.preguntas.length} preguntas</span>`;
+    b.onclick = ()=>{ filtro = g.pais; iniciar(); };
+    grid.appendChild(b);
+  });
+}
+function iniciar(){
+  pool = construirPool(filtro);
+  idx = 0; aciertos = 0; fallos = 0;
+  $("pantallaInicio").hidden = true;
+  $("pantallaFinal").hidden = true;
+  $("pantallaJuego").hidden = false;
+  window.scrollTo({top:0,behavior:"smooth"});
+  render();
+}
+function render(){
+  respondida = false;
+  const q = pool[idx];
+  $("paisTag").textContent = q.bandera + "  " + q.pais;
+  $("textoPregunta").textContent = q.p;
+  $("marcador").innerHTML = `✅ ${aciertos} &nbsp; ❌ ${fallos}`;
+  $("contador").textContent = `Pregunta ${idx+1} de ${pool.length}`;
+  $("barraProgreso").style.width = (idx / pool.length * 100) + "%";
+  const cont = $("opciones");
+  cont.innerHTML = "";
+  q.o.forEach((txt, i)=>{
+    const b = document.createElement("button");
+    b.className = "opcion";
+    b.type = "button";
+    const letra = document.createElement("span");
+    letra.className = "letra";
+    letra.textContent = LETRAS[i];
+    const span = document.createElement("span");
+    span.className = "texto";
+    span.textContent = txt;
+    b.appendChild(letra);
+    b.appendChild(span);
+    b.onclick = ()=> responder(i);
+    cont.appendChild(b);
+  });
+  $("feedback").hidden = true;
+  $("btnSiguiente").hidden = true;
+  $("btnSiguiente").textContent = (idx === pool.length-1) ? "Ver resultados 🏁" : "Siguiente →";
+}
+function responder(i){
+  if(respondida) return;
+  respondida = true;
+  const q = pool[idx];
+  const botones = [...document.querySelectorAll(".opcion")];
+  botones.forEach((b,j)=>{
+    b.disabled = true;
+    if(j === q.c) b.classList.add("correcta");
+    if(j === i && i !== q.c) b.classList.add("incorrecta");
+  });
+  const acierto = (i === q.c);
+  if(acierto) aciertos++; else fallos++;
+  $("marcador").innerHTML = `✅ ${aciertos} &nbsp; ❌ ${fallos}`;
+  $("barraProgreso").style.width = ((idx+1) / pool.length * 100) + "%";
+  const fb = $("feedback");
+  fb.hidden = false;
+  fb.className = "feedback " + (acierto ? "ok" : "no");
+  $("feedbackTitulo").textContent = acierto
+    ? "✅ ¡Correcto!"
+    : "❌ Incorrecto — La respuesta correcta es: " + q.o[q.c];
+  $("feedbackTexto").textContent = q.e;
+  $("btnSiguiente").hidden = false;
+  $("btnSiguiente").focus({preventScroll:true});
+}
+function siguiente(){
+  if(!respondida) return;
+  if(idx < pool.length - 1){
+    idx++;
+    render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  } else {
+    finalizar();
+  }
+}
+function finalizar(){
+  $("pantallaJuego").hidden = true;
+  $("pantallaFinal").hidden = false;
+  window.scrollTo({top:0,behavior:"smooth"});
+  const total = pool.length;
+  const pct = Math.round(aciertos / total * 100);
+  $("puntajeFinal").textContent = pct + "%";
+  $("detalleFinal").innerHTML =
+    `Respondiste correctamente <strong>${aciertos}</strong> de <strong>${total}</strong> preguntas ` +
+    `(❌ ${fallos} incorrectas).`;
+  let emoji, titulo;
+  if(pct >= 90){ emoji="🏆"; titulo="¡Excelente! Dominas el tema"; }
+  else if(pct >= 70){ emoji="👏"; titulo="¡Muy bien! Solo repasa algunos detalles"; }
+  else if(pct >= 50){ emoji="🙂"; titulo="Vas por buen camino, repasa las explicaciones"; }
+  else { emoji="📚"; titulo="Necesitas repasar. ¡Inténtalo de nuevo!"; }
+  $("emojiFinal").textContent = emoji;
+  $("tituloFinal").textContent = titulo;
+}
+$("btnSiguiente").addEventListener("click", siguiente);
+$("btnVolver").addEventListener("click", ()=>{
+  $("pantallaJuego").hidden = true;
+  $("pantallaInicio").hidden = false;
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+$("btnRepetir").addEventListener("click", iniciar);
+$("btnMenu").addEventListener("click", ()=>{
+  $("pantallaFinal").hidden = true;
+  $("pantallaInicio").hidden = false;
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.addEventListener("keydown", (e)=>{
+  if($("pantallaJuego").hidden) return;
+  if(e.key >= "1" && e.key <= "6"){
+    const i = parseInt(e.key,10) - 1;
+    const botones = [...document.querySelectorAll(".opcion")];
+    if(botones[i] && !respondida) botones[i].click();
+  }
+  if(e.key === "Enter" && respondida){ siguiente(); }
+});
+pintarInicio();
+</script>
+</body>
+</html>
